@@ -1,0 +1,166 @@
+{% include 'administracion/header.html' %} 
+{% load static %}
+<div class="card mt-3">
+    <div class="alert  text-center">
+       <h1 style="color:purple"><i class="fas fa-bars"></i>  <strong> PAPELERA DE CATEGORÍAS</strong></h1>
+    </div>
+ </div>
+ <br>
+ <div class="table-responsive">
+    {% if categorias %}
+      <table class="table table-bordered table-striped " id="tabla-categoria">
+        <thead class="alert alert-info text-center">
+          <tr>
+            <th>Categoría</th>
+            
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="table-deleted">
+          {% for categoria in categorias %}
+            <tr class="deleted-row transparent-content"> 
+              <td>
+                <div class="alert alert-info text-center ">
+                  <h5>COD:</h5>{{ categoria.codigo }}
+                </div>
+                 
+                <div class="alert alert-success text-center">
+                  <h5>TIPO:</h5>{{ categoria.tipo }}
+                </div>
+                <div class="alert {% if categoria.estado == 1 %}alert-success{% elif categoria.estado == 0 %}alert-danger{% else %}alert-danger{% endif %} text-center">
+                    <h5>ESTADO:</h5>
+                    {% if categoria.estado == 3 %}
+                        BORRADO
+                    {% else %}
+                        {{ categoria.estado|yesno:"ACTIVO,INACTIVO,BORRADO" }}
+                    {% endif %}
+                </div>
+                
+              </td>
+           
+         
+              <td class="text-center">
+                <a href="#" class="btn btn-primary btn-circle editar-categoria" title="Restaurar" data-id-categoria="{{ categoria.codigo }}" onclick="confirmRecoveryLogical(this)">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+              </a>
+              
+                <a href="#" class="btn btn-danger btn-circle eliminar-categoria" 
+                data-categoria-id="{{ categoria.codigo }}" 
+                onclick="confirmDelete(this)" 
+                title="Eliminar">
+                 <i class="fa fa-trash"></i>
+             </a>
+             
+              </td>
+              
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="alert alert-danger">No hay categorias registradas actualmente.</p>
+    {% endif %}
+  </div>
+  
+
+<script>
+    function confirmRecoveryLogical(button) {
+        var categoriaId = button.getAttribute('data-id-categoria');
+        iziToast.question({
+            rtl: false,
+            theme: 'dark',
+            icon: 'fa-solid fa-arrow-rotate-left',
+            progressBarColor: 'rgb(0, 255, 184)',
+            backgroundColor: '#5E5E5E',
+            layout: 2,
+            timeout: 10000,
+            close: false,
+            overlay: true,
+            toastOnce: true,
+            zindex: 999,
+            title: 'Recuperar Registro',
+            message: '<div class="toast-message" style="color: white;">¿Estás seguro que deseas restaurar este registro?</div>',
+            position: 'center',
+            buttons: [
+                ['<button style="color:white; font-weight:bold;"><b>Confirmar</b></button>', function (instance, toast) {
+                    window.location.href = "{% url 'recovery_categorias_logico' 999 %}".replace('999', categoriaId);
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }],
+                ['<button style="color:white; font-weight:bold;">Cancelar</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }]
+            ]
+        });
+    }
+</script>
+
+
+
+  <script>
+    function confirmDelete(button) {
+        var categoria_id = button.getAttribute('data-categoria-id');
+        //alert(vehiculo_id);
+        iziToast.question({
+            rtl: false, // Dirección del texto (de derecha a izquierda)
+            theme: 'dark', // Tema del mensaje
+            icon: 'fa fa-trash', // Icono del mensaje
+            progressBarColor: 'rgb(0, 255, 184)', // Color de la barra de progreso
+            backgroundColor: '#5E5E5E', // Color
+
+            layout: 2,
+            timeout: 10000,
+            close: false,
+            overlay: true,
+            toastOnce: true,
+            zindex: 999,
+            title: 'Eliminar Registro Permanente',
+            message: '<div class="toast-message" style="color: white;">¿Estás seguro de eliminar este registro de forma permanente?</div>', // Agregar estilo CSS para el color del texto
+            position: 'center',
+            buttons: [
+                ['<button style="color:white; font-weight:bold;"><b>Confirmar</b></button>', function (instance, toast) {
+                    // Ejecutar la acción de eliminación
+                    window.location.href = "{% url 'eliminar_categorias_def' 999 %}".replace('999', categoria_id);
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }],
+                ['<button style="color:white; font-weight:bold;">Cancelar</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }]
+            ]
+        });
+    }
+</script>
+
+<style>
+    .alert-error {
+        /* Estilos para mensajes de error */
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+</style>
+
+   <!-- Agrega un script al final del cuerpo para mostrar los mensajes -->
+   <script>
+    // Verifica si hay un mensaje de éxito
+    {% if success_message %}
+        iziToast.success({
+            title: 'Éxito',
+            message: '{{ success_message }}',
+            position: 'topRight'
+        });
+    {% endif %}
+    
+    // Verifica si hay un mensaje de error
+    {% if error_message %}
+        iziToast.error({
+            title: 'Error',
+            message: '{{ error_message }}',
+            position: 'topRight'
+        });
+    {% endif %}
+
+   
+      
+
+
+{% include 'administracion/footer.html' %} 

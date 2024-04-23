@@ -1,0 +1,392 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+   <head>
+      <!-- basic -->
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <!-- mobile metas -->
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+      <!-- site metas -->
+      <title>Administración</title>
+      <meta name="keywords" content="">
+      <meta name="description" content="">
+      <meta name="author" content="">
+     
+     
+      <link rel="icon" href="{% static 'images/fevicon.png' %}" type="image/png" />
+      <!-- bootstrap css -->
+      <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+      <!-- site css -->
+      <link rel="stylesheet" href="{% static 'style.css' %}" />
+      <!-- responsive css -->
+      <link rel="stylesheet" href="{% static 'css/responsive.css' %}" />
+      <!-- color css -->
+      <link rel="stylesheet" href="{% static 'css/colors.css' %}" />
+      <!-- select bootstrap -->
+      <link rel="stylesheet" href="{% static 'css/bootstrap-select.css' %}" />
+      <!-- scrollbar css -->
+      <link rel="stylesheet" href="{% static 'css/perfect-scrollbar.css' %}" />
+      <!-- custom css -->
+      <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+      <!-- jQuery -->
+      <script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+        <script src="{% static 'js/popper.min.js'%}"></script>
+        <script src="{% static 'js/bootstrap.min.js'%}"></script>
+      <link rel="stylesheet" href="{% static 'datatables/dataTables.css' %}">
+      <script type="text/javascript" src="{% static 'datatables/dataTables.js' %}">
+      </script>
+      <script src="{% static 'datatables/dataTables.json' %}"></script>
+      <link rel="stylesheet" href="{% static 'local/fileinput.css' %}"  crossorigin="anonymous" referrerpolicy="no-referrer" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.5.2/js/fileinput.js" integrity="sha512-aUCTCr85+L86sytYO0ptwuHI2Vp5nHIZK5+Dqv+st7DD6QDr2e57pfS1Ig2M2/cWI290t2ki0sxSVvOJ4Jzgqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.5.2/js/locales/es.min.js" integrity="sha512-q2lXTQuccVsDwaOpJNHbGDL2c5DEK706u1MCjKuGAG4zz+q1Sja3l2RuymU3ySE6RfmTYZ/V4wY5Ol71sRvvWA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.5.2/themes/gly/theme.min.js" integrity="sha512-8yRoxu0SqiF5Xwag/slKuVpGh0Pp+umgt/6zJOtkofPxpmmhSx3z5sjdy3Zgd9gfFagnmu8Te1Qvhj9uZ9cI1Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26vBsMLFYH4kQ67/bbV8XaCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+      <!-- Importacion de Jquery Validation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.4/jquery.validate.min.js" integrity="sha512-FOhq9HThdn7ltbK8abmGn60A/EMtEzIzv1rvuh+DqzJtSGq8BRdEN0U+j0iKEIffiw/yEtVuladk6rsG4X6Uqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.4/additional-methods.min.js" integrity="sha512-XJiEiB5jruAcBaVcXyaXtApKjtNie4aCBZ5nnFDIEFrhGIAvitoqQD6xd9ayp5mLODaCeaXfqQMeVs1ZfhKjRQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.4/localization/messages_es_AR.min.js" integrity="sha512-HHnzo0ssMRoNapdoTaORwzLpemBFMsg7GA8fr0d9xS1rEXKHazYMTUAUka2abGFCfsdXgZPVVyv3LCkXP1Fhsg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+
+      <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+      <![endif]-->
+   </head>
+   <body class="dashboard dashboard_1">
+      <div class="full_container">
+         <div class="inner_container">
+            <!-- Sidebar  -->
+            <nav id="sidebar">
+               <div class="sidebar_blog_1">
+                  <div class="sidebar-header">
+                     <div class="logo_section">
+                        <a href="#"><img class="logo_icon img-responsive" src="{% static 'redondo.png' %}"  alt="#" /></a>
+
+                    </div>
+                    
+                    
+                  </div>
+                  <div class="sidebar_user_info">
+                     <div class="icon_setting"></div>
+                     <div class="user_profle_side">
+                        {% if path_name %}
+                        {% comment %} <img class="logo_icon img-responsive" src="{{ UPLOADS_URL }}{{ path_name }}" alt="Foto de perfil" style="max-width: 100px; max-height: 100px; border-radius: 5%;"> {% endcomment %}
+                        <div class="user_img">
+                          
+                           <img class="img-responsive" src="{% static path_name %}" alt="#">
+                       </div>
+                       
+                       
+                    {% else %}
+                    <div class="user_img"><img class="img-responsive" src="{% static 'images/layout_img/user_img.jpg' %}" alt="#" /></div>
+                       
+                       
+                    {% endif %}
+                        
+                        <div class="user_info">
+                            <p>{{ user_name }} {{ last_name }} </p>
+                          
+                        
+                            <p style="color: #1ECD84; font-weight:bold;">
+                                <span class="online_animation"></span> {{ perfil_name }}
+                            </p>
+                            
+                        </div>
+        
+                     </div>
+                  </div>
+               </div>
+               <div class="sidebar_blog_2">
+                  <h4>General</h4>
+                  <ul class="list-unstyled components">
+                     <li><a href="{% url 'administracion' %}"><i class="fa fa-tachometer"></i> <span> Dashboard </span></a></li>
+                   
+                        <li><a id="dashboard-link" href="{% url 'dashboard' %}"><i class="fa fa-bar-chart"></i> <span> Tendencias </span></a></li>
+
+                       
+                       
+                        <script>
+                           // Función para mostrar el spinner de carga con un mensaje opcional
+                           function mostrarSpinner(message) {
+                               // Muestra el overlay con el spinner
+                               document.getElementById('loader').style.display = 'flex';
+                               // Establece el mensaje
+                               document.getElementById('message').innerText = message || '';
+                           }
+                       
+                           // Manejar el clic del enlace
+                           document.addEventListener("DOMContentLoaded", function() {
+                               document.getElementById('dashboard-link').addEventListener('click', function(event) {
+                                   // Mostrar el spinner al hacer clic en el enlace
+                                   mostrarSpinner('Prediciendo');
+                               });
+                           });
+                       </script>
+                       
+                 
+                                                                         
+                     <li>
+                      <li><a href="{% url 'usuarios' %}"><i class="fa fa-users"></i> <span> Gestionar Usuarios</span></a></li>
+                      <li>
+                          <a href="#apps" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                              <i class="fa fa-truck"></i> <span>Gestionar Vehículos</span>
+                          </a>
+                          <ul class="collapse list-unstyled" id="apps">
+                              <li><a href="{% url 'vehiculos' %}"><span>> Vehículos</span></a></li>
+                              <li><a href="{% url 'categorias' %}"><span>> Categorías</span></a></li>
+                          </ul>
+                      </li>
+                      <li><a href="{% url 'facturas' %}"><i class="fa fa-file-o"></i> <span> Gestionar Facturas</span></a></li>
+                      
+                        <li><a href="{% url 'papelera' %}"><i class="fa fa-trash red_color"></i> <span class="red_color font-weight-bold"> PAPELERA</span></a></li>
+                    
+                  </ul>
+                  <hr class=alert alert-primary>
+                  
+              </div>
+              
+              <br>
+              <br>
+              
+            </nav>
+            <!-- end sidebar -->
+            <!-- right content -->
+            <div id="content">
+               <!-- topbar -->
+               <div class="topbar">
+                  <nav class="navbar navbar-expand-lg navbar-light">
+                     <div class="full">
+                        <button type="button" id="sidebarCollapse" class="sidebar_toggle"><i class="fa fa-bars"></i></button>
+                        <div class="logo_section">
+                          
+                        </div>
+                        <div class="right_topbar">
+                           <div class="icon_info">
+                             
+                              <ul class="user_profile_dd">
+                                 <li>
+                                    <a class="dropdown-toggle" data-toggle="dropdown">
+                                       {% if path_name %}
+                                       <img class="img-responsive rounded-circle" src="{% static path_name %}" alt="#" />
+                                       {% else %}
+                                       <img class="img-responsive rounded-circle" src="{% static 'images/layout_img/user_img.jpg' %}" alt="#" />
+                                       {% endif %} 
+                                       <span class="name_user">
+                                            <h6 style="font-weight:bold; color:white;">{{ user_name }} {{ last_name }}</h6>
+                                           
+                                        </span>
+                                    </a>
+                                    
+                                    <div class="dropdown-menu">
+                                       <a class="dropdown-item" href="profile.html">My Profile</a>
+                                       <a class="dropdown-item" href="settings.html">Settings</a>
+                                     
+                                       <a class="dropdown-item" href="#"><span>Salir</span> <i class="fa fa-sign-out"></i></a>
+                                    </div>
+                                 </li>
+                              </ul>
+                           </div>
+                        </div>
+                     </div>
+                  </nav>
+               </div>
+
+               <style>
+                .redondo{
+                    border-radius: 100px;
+                }
+                .btn-circle{
+                    border-radius: 100px;
+                }
+            </style>
+
+          <br>
+          {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{% endfor %}
+
+<style>
+   /* Estilos para el loader */
+   #loader {
+       position: fixed;
+       z-index: 999;
+       top: 0;
+       left: 0;
+       width: 100vw; /* Ancho de la ventana del navegador */
+       height: 100vh; /* Alto de la ventana del navegador */
+       background: radial-gradient(rgba(20, 20, 20, 0.8), rgba(0, 0, 0, 0.8));
+       display: flex;
+       justify-content: center;
+       align-items: center;
+   }
+
+  
+
+   #loader .dot {
+       bottom: 0;
+       height: 10%;
+       left: 0;
+       margin: auto;
+       position: absolute;
+       right: 0;
+       top: 0;
+       width: 10px;
+       
+   }
+
+   #loader .dot::before {
+       border-radius: 50%;
+       content: "";
+       height: 87.5px;
+       left: 0;
+       position: absolute;
+       right: 0;
+       top: 0;
+       transform: scale(0);
+       width: 87.5px;
+       
+   }
+
+   #loader .dot:nth-child(7n+1) {
+       transform: rotate(45deg);
+   }
+
+   #loader .dot:nth-child(7n+1)::before {
+       animation: 0.8s linear 0.1s normal none infinite running load;
+       background: #00ff80 none repeat scroll 0 0;
+   }
+
+   #loader .dot:nth-child(7n+2) {
+       transform: rotate(90deg);
+   }
+
+   #loader .dot:nth-child(7n+2)::before {
+       animation: 0.8s linear 0.2s normal none infinite running load;
+       background: #00ffea none repeat scroll 0 0;
+   }
+
+   #loader .dot:nth-child(7n+3) {
+       transform: rotate(135deg);
+   }
+
+   #loader .dot:nth-child(7n+3)::before {
+       animation: 0.8s linear 0.3s normal none infinite running load;
+       background: #00aaff none repeat scroll 0 0;
+   }
+
+   #loader .dot:nth-child(7n+4) {
+       transform: rotate(180deg);
+   }
+
+   #loader .dot:nth-child(7n+4)::before {
+       animation: 0.8s linear 0.4s normal none infinite running load;
+       background: #0040ff none repeat scroll 0 0;
+   }
+
+   #loader .dot:nth-child(7n+5) {
+       transform: rotate(225deg);
+   }
+
+   #loader .dot:nth-child(7n+5)::before {
+       animation: 0.8s linear 0.5s normal none infinite running load;
+       background: #2a00ff none repeat scroll 0 0;
+   }
+
+   #loader .dot:nth-child(7n+6) {
+       transform: rotate(270deg);
+   }
+
+   #loader .dot:nth-child(7n+6)::before {
+       animation: 0.8s linear 0.6s normal none infinite running load;
+       background: #9500ff none repeat scroll 0 0;
+   }
+
+   #loader .dot:nth-child(7n+7) {
+       transform: rotate(315deg);
+   }
+
+   #loader .dot:nth-child(7n+7)::before {
+       animation: 0.8s linear 0.7s normal none infinite running load;
+       background: magenta none repeat scroll 0 0;
+   }
+
+   #loader .dot:nth-child(7n+8) {
+       transform: rotate(360deg);
+   }
+
+   #loader .dot:nth-child(7n+8)::before {
+       animation: 0.8s linear 0.8s normal none infinite running load;
+       background: #ff0095 none repeat scroll 0 0;
+   }
+
+   #loader .lading {
+       background-image: url("../images/loading.gif");
+       background-position: 50% 50%;
+       background-repeat: no-repeat;
+       bottom: -40px;
+       height: 20px;
+       left: 0;
+       position: absolute;
+       right: 0;
+       width: 180px;
+       
+   }
+   #message {
+      color: white;
+      font-size: 20px;
+      animation: pulse 1s infinite alternate; /* Animación */
+      opacity: 0; /* Comienza invisible */
+  }
+  
+  @keyframes pulse {
+      0% {
+          opacity: 0;
+      }
+      100% {
+          opacity: 1;
+      }
+   }
+
+   @keyframes load {
+       0% {
+           opacity: 1;
+           transform: scale(0.5); /* Reduce el tamaño inicial de los puntos */
+       }
+       100% {
+           opacity: 0;
+           transform: scale(1); /* Restaura el tamaño original de los puntos */
+       }
+   }
+</style>
+</head>
+<body oncontextmenu='return false' class='snippet-body'>
+<!-- Loader -->
+<div id="loader">
+<div id="message"></div>
+<div class="dot"></div>
+<div class="dot"></div>
+<div class="dot"></div>
+<div class="dot"></div>
+<div class="dot"></div>
+<div class="dot"></div>
+<div class="dot"></div>
+<div class="dot"></div>
+<div class="lading"></div>
+</div>
+
+<script>
+window.addEventListener('load', function () {
+  $("#loader").css("display","none");
+  $("#message").css("display","none");
+})
+</script>
+
+  

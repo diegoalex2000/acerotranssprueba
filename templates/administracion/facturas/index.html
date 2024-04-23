@@ -1,0 +1,888 @@
+{% include 'administracion/header.html' %} 
+{% load static %}
+<br>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/switchery/0.8.2/switchery.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/switchery/0.8.2/switchery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/es.min.js"></script>
+
+
+<div class="card mt-3">
+   <div class="card-header alert  text-center">
+      <h1 style="color:purple"><i class="fas fa-file-o"></i>  <strong>ADMINISTRACIÓN DE FACTURAS</strong></h1>
+   </div>
+</div>
+<br>
+<div class="text-center">
+  <a href="#" id="btnAgregarFactura" data-toggle="modal" data-target="#Modal" class="btn btn-success redondo"> <i class="fa fa-plus"></i> Nueva Factura</a>
+</div>
+
+<br>
+
+
+<script>
+  // Manejar el cambio en la selección del filtro de socio
+  document.getElementById('filtroSocio').addEventListener('change', function() {
+      filterRows();
+  });
+
+  
+
+  function filterRows() {
+    var selectedSocio = document.getElementById('filtroSocio').value;
+   
+    $('#tblFactura').DataTable().rows().every(function () {
+        var row = this.node();
+        var socioColumn = row.querySelector('td:first-child').textContent.trim();
+        var socioFound = selectedSocio === '' || socioColumn === selectedSocio;
+
+        if (socioFound) {
+            row.style.display = 'table-row';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Informar a DataTables sobre los cambios en la visibilidad de las filas
+    $('#tblFactura').DataTable().rows().invalidate().draw();
+}
+
+</script>
+
+
+
+
+<div class="table-responsive">
+  <table class="table table-bordered" id="tblFactura">
+    <thead class="alert alert-info text-center">
+        <tr>
+            <th>Socio</th>
+            <th>Detalle 1</th>
+            <th>Detalle 2</th>
+            <th>Detalle 3</th>
+            <th>ACCIONES</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for factura in facturas %}
+        <tr>
+            <td>
+              <div class="alert alert-info">
+                <h6>Factura:</h6>
+                00{{ factura.codigo }}
+              </div> 
+              <div class="alert alert-primary">
+                <h6>Dueño:</h6>
+                {{ factura.nombre_dueno }} {{ factura.apellido_dueno }}
+              </div> 
+              <div class="alert alert-secondary">
+                <h6>Vehiculo:</h6>
+                {{ factura.placa }}
+              </div>
+              <div class="alert alert-secondary">
+                <h6>Categoria:</h6>
+               [{{ factura.categoria }}] {{ factura.tonelaje }}T
+              </div> 
+             
+
+
+            </td>
+            <td>
+                <div class="alert alert-success">
+                    <h6>Tasa Interés</h6>
+                    {{ factura.tasa_interes }}%
+                </div>
+                <div class="alert alert-info">
+                    <h6>Valor Factura</h6>
+                    {{ factura.valor_factura }}$
+                </div>
+                <div class="alert alert-info">
+                    <h6>1% retención</h6>
+                    {{ factura.percent1 }}
+                </div>
+                <div class="alert alert-info">
+                    <h6>2% compañia</h6>
+                    {{ factura.percent2 }}
+                </div>
+            </td>
+            <td>
+                <div class="alert alert-success">
+                    <h6>Intereses Generados</h6>
+                    {{ factura.intereses }}
+                </div>
+                <div class="alert alert-success">
+                    <h6>Dinero Entregado SP</h6>
+                    {{ factura.total_intereses }}
+                </div>
+                <div class="alert alert-primary">
+                    <h6>Dinero Entregado CP</h6>
+                    {{ factura.total_pendientes }}
+                </div>
+                <div class="alert alert-primary">
+                    <h6>Observaciones</h6>
+                    {{ factura.comentario_valores_pendientes }}
+                </div>
+            </td>
+            <td>
+                <div class="alert alert-success">
+                    <h6>Fecha de Liquidación</h6>
+                    <h6 class="fecha-factura">{{ factura.fecha_factura }}</h6>
+                </div>
+                <div class="alert alert-danger">
+                    <h6>Fecha Aproximada de Pago</h6>
+                    <h6 class="fecha-aprox-pago">{{ factura.fecha_aprox_pago }}</h6>
+                </div>
+                <div class="alert {% if factura.estado == '1' %} alert-success {% else %} alert-danger {% endif %}">
+                  <h6>Estado:</h6> {% if factura.estado == '1' %} Comprado {% else %} Pagado {% endif %}
+              </div>
+              
+         
+                <div class="alert alert-warning">
+                    <h6>COMENTARIO:</h6>
+                    {{ factura.observacion }}
+                </div>
+            </td>
+            <td>
+              {% if factura.adjunto_pago and factura.adjunto_pago.strip %}
+              <a href="{% static factura.adjunto_pago %}" target="blank" class="btn btn-secondary btn-redondo">
+                  <i class="fas fa-eye"></i>
+              </a>
+          {% endif %}
+          
+          <a href="#" class="btn btn-info btn-redondo" data-factura-id="{{ factura.codigo }}" data-toggle="modal" data-target="#detalleFacturaModal">
+            <i class="fas fa-bars"></i>
+        </a> 
+        
+                    {% if factura.estado == '1' %}
+                    <a href="#" class="btn btn-primary btn-circle confirm-pago" 
+                    data-factura-id="{{ factura.codigo}}" 
+                onclick="confirmFacturaPagada(this)" 
+                title="Marcar como Pagado">
+                 <i class="fa fa-check"></i>
+             </a>
+                  
+                {% endif %}
+    
+                <a href="{{ factura.codigo }}" class="btn btn-danger btn-redondo btn-sm" onclick="return confirm('¿Estás seguro de eliminar esta factura?')">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+        </table>
+
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function confirmFacturaPagada(button) {
+        var vehiculoId = button.getAttribute('data-factura-id');
+        //alert(vehiculoId);
+        iziToast.question({
+            rtl: false, // Dirección del texto (de derecha a izquierda)
+            theme: 'dark', // Tema del mensaje
+            icon: 'fa fa-trash', // Icono del mensaje
+            progressBarColor: 'rgb(0, 255, 184)', // Color de la barra de progreso
+            backgroundColor: '#5E5E5E', // Color
+
+            layout: 2,
+            timeout: 10000,
+            close: false,
+            overlay: true,
+            toastOnce: true,
+            zindex: 999,
+            title: 'Actualizar Factura',
+            message: '<div class="toast-message" style="color: white;">¿Estás seguro de maracar la factura como pagada?</div>', // Agregar estilo CSS para el color del texto
+            position: 'center',
+            buttons: [
+                ['<button style="color:white; font-weight:bold;"><b>Confirmar</b></button>', function (instance, toast) {
+                    // Ejecutar la acción de eliminación
+                    window.location.href = "{% url 'actualizarFacturaPagado' 999 %}".replace('999', vehiculoId);
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }],
+                ['<button style="color:white; font-weight:bold;">Cancelar</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }]
+            ]
+        });
+    }
+</script>
+
+
+
+  <script>
+    $(document).ready(function() {
+      $('#detalleFacturaModal').on('show.bs.modal', function(event) {
+          var button = $(event.relatedTarget);
+          var facturaId = button.data('factura-id');
+          
+          $.ajax({
+              url: "{% url 'detalle_factura_view' 999 %}".replace('999', facturaId),
+              type: 'GET',
+              success: function(data) {
+                  $('#propietario').html('<strong>Socio:</strong> ' + data.nombre_dueno + ' '+data.apellido_dueno);
+                  $('#valorFactura').text(data.valor_factura);
+                  var fechaPago = moment(data.fecha_aprox_pago).locale('es').format('LL');
+                  $('#fechaPago').text(fechaPago);
+                  $('#retencion').text(data.percent1);
+                  $('#compania').text(data.percent2);
+                  $('#tasaInteres').text(data.tasa_interes);
+                  $('#intereses').text(data.intereses);
+                  $('#totalIntereses').text(data.total_intereses);
+                  var fechaFactura = moment(data.fecha_factura).locale('es').format('LL');
+                  $('#fechaFactura').text(fechaFactura);
+                  $('#estadoFac').html(data.estado == 1 ? '<strong class="alert alert-success form-control">Estado: Comprado</strong>' : '<strong class="alert alert-danger form-control">Estado: Pagado</strong>');
+                  var totalIntereses = parseFloat(data.total_intereses.replace('$', '').replace(',', ''));
+                  var intereses = parseFloat(data.intereses.replace('$', '').replace(',', ''));
+                  var valorACobrar = totalIntereses + intereses;
+                  $('#valorCobrar').text(valorACobrar.toFixed(2));
+  
+                  var totalConPendientes = parseFloat(data.total_pendientes.replace('$', '').replace(',', ''));
+                  var totalPendientesCobrar = totalConPendientes + intereses;
+                  var descuento = ((totalConPendientes - valorACobrar) * -1) - intereses;
+                  
+                  if (descuento !== 0 && !(descuento === -0)) {
+                    $('#descuento').text(descuento.toFixed(2));
+                    $('#motivo').text(data.comentario_valores_pendientes);
+                    
+                    // Ocultar el campo "Valor a cobrar" y mostrar el campo "Total a cobrar con o sin descuentos"
+                    $('#valorCobrar').closest('p').hide();
+                    $('#totalCobrar').text(valorACobrar.toFixed(2));
+                    $('#totalCobrar').closest('p').show();
+                } else {
+                    // Mostrar el campo "Valor a cobrar" y ocultar los detalles del descuento
+                    $('#valorCobrar').text(valorACobrar.toFixed(2));
+                    $('#descuento').text('');
+                    $('#motivo').text('');
+                    $('#totalCobrar').closest('p').hide();
+                    $('#totalCobrar').text('');
+                }
+                
+                
+              },
+              error: function(xhr, status, error) {
+                  console.error('Error al obtener datos de la factura:', error);
+              }
+          });
+      });
+  });
+  
+  </script> 
+  
+
+
+  
+  <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+    <form method="post" id="form_factura">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color:#063051;">
+                    <h5 class="modal-title text-white " id="ModalLabel"> <i class="fas fa-calculator"></i> Calculadora de Facturas</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="alert alert-info" role="alert">
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label>Socio:</label>
+                                    <select class="form-control" name="socio" id="socio" required>
+                                        <option value="">***SELECCIONE UN SOCIO***</option>
+                                        {% for socio in socios_activos %}
+                                        <option value="{{ socio.0 }}">
+                                            {{ socio.1 }} {{ socio.2 }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                  <label>Vehiculo:</label>
+                                  <select class="form-control" name="vehiculo" id="vehiculo" required>
+                                      <option value="">***SELECCIONE UN VEHICULO***</option>
+                                     
+                                  </select>
+                              </div>
+                                <div class="form-group col-md-4">
+                                    <label>Tasa de Intereses (%):</label>
+                                    <select class="form-control" name="tasa_interes" id="tasa_interes" required>
+                                        <option value="">***SELECCIONE UNA TASA***</option>
+                                    </select>
+                                    <script>
+                                        // Obtener el elemento select
+                                        var select = document.getElementById("tasa_interes");
+
+                                        // Iterar sobre los números del 1 al 10 y agregar opciones al select
+                                        for (var i = 1; i <= 10; i++) {
+                                            var option = document.createElement("option");
+                                            option.text = i + "%";
+                                            option.value = i;
+                                            select.appendChild(option);
+                                        }
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Valor de la Factura:</label>
+                                <input type="number" name="valor_factura" id="valor_factura" class="form-control" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de la Factura:</label>
+                                <input type="date" name="fecha_factura" id="fecha_factura" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Observación:</label>
+                                <textarea class="form-control" required name="observacion" id="observacion"></textarea>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-12">
+                                <div class="table-responsive">
+                                  <table class="table">
+                                    <tbody>
+                                      <tr>
+                                        <td>
+                                          <div class="form-group">
+                                            <div class="form-check">
+                                              <label class="form-check-label" for="chkretencion">¿Tiene retención?</label>
+                                              <input type="checkbox" class="form-check-input js-switch" id="chkretencion" name="retencion">
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td>
+                                          <div class="form-group">
+                                            <div class="form-check">
+                                              <label class="form-check-label" for="chkValoresPendientes">¿Tiene pendientes?</label>
+                                              <input type="checkbox" class="form-check-input js-switch" id="chkValoresPendientes" name="valores_pendientes">
+                                            </div>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div class="row" id="campoValoresPendientes" style="display: none;">
+                              <hr class="alert alert-danger">
+                              <table class="table">
+                                <tr id="clonableRow">
+                                    <td>
+                                        <div class="form-group">
+                                            <label>Valor Pendiente:</label>
+                                            <input type="number" name="valor_pendiente[]" placeholder="Ingrese valor" class="form-control" step="0.01">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <label>Comentario sobre Valores Pendientes:</label>
+                                            <input type="text" class="form-control" placeholder="Ingrese comentario" name="comentario_valores_pendientes[]">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <label for="code" class="text-left"></label><br>
+                                            <button type="button" class="btn btn-primary btnMore">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Aquí se agregarán las filas clonadas -->
+                                <tbody id="incrementa"></tbody>
+                            </table> 
+                          </div>
+                       </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background-color:#063051;">
+                   <!-- Agrega un identificador único al botón "CALCULAR" -->
+                    <button type="button" class="btn btn-primary btn-redondo" id="btnCalcular"> <i class="fas fa-check"></i> CALCULAR</button>
+
+                    <button type="button" class="btn btn-danger btn-redondo" data-dismiss="modal"> <i class="fa fa-close"></i> CERRAR</button>
+                    
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<script>
+  $(document).ready(function() {
+    // Cuando se haga clic en el botón "CALCULAR"
+    $('#btnCalcular').click(function() {
+      // Validar el formulario usando jvalidate
+      if ($("#form_factura").valid()) {
+        // Si el formulario es válido, abrir el modal
+        calcularValores();
+        $('#calcularModal').modal('show');
+        $('#Modal').modal('hide');
+      }
+      $('#calcularModal').on('hidden.bs.modal', function () {
+        $('#Modal').modal('show');
+      });
+    });
+
+    $('#form_factura').validate({
+      rules: {
+        socio: {
+          required: true
+        },
+        tasa_interes: {
+          required: true
+        },
+        valor_factura: {
+          required: true,
+          number: true,
+          step: 0.01
+        },
+        fecha_factura: {
+          required: true
+        },
+        observacion: {
+          required: true
+        }
+      },
+      // Mensajes de error personalizados
+      messages: {
+        socio: {
+          required: "Por favor seleccione un socio."
+        },
+        tasa_interes: {
+          required: "Por favor seleccione una tasa de interés."
+        },
+        valor_factura: {
+          required: "Por favor ingrese el valor de la factura.",
+          number: "Por favor ingrese un número válido.",
+          step: "Por favor ingrese un valor válido con dos decimales."
+        },
+        fecha_factura: {
+          required: "Por favor seleccione una fecha para la factura."
+        },
+        observacion: {
+          required: "Por favor ingrese una observación."
+        }
+      },
+      // Submit handler para evitar el envío automático del formulario
+      submitHandler: function(form) {
+        return false;
+      }
+    });
+
+  });
+ 
+  function calcularValores() {
+    var selectedSocioId = $('#socio option:selected').val();
+    $('#idSoc').val(selectedSocioId);
+    var selectedVehiculoId = $('#vehiculo option:selected').val();
+    $('#idVeh').val(selectedVehiculoId);
+    var selectedSocio = $('#socio option:selected').text();
+    var tasaInteres = parseFloat($('#tasa_interes').val());
+    $('#tasa_interesFac').val(tasaInteres);
+    var fechaFactura = $('#fecha_factura').val();
+    $('#fechaFac').val(fechaFactura);
+    var observacion = $('#observacion').val();
+    $('#obsFac').val(observacion);
+    var valorFactura = parseFloat($('#valor_factura').val());
+    $('#valorFac').val(valorFactura);
+    var descuento = parseFloat($('#valor_pendiente').val()) || 0;
+
+    // Cálculo de valores pendientes
+    var valoresPendientes = 0;
+    var comentariosValoresPendientes = [];
+
+    $('input[name="valor_pendiente[]"]').each(function() {
+        var valor = parseFloat($(this).val()) || 0;
+        valoresPendientes += valor;
+    });
+
+    $('input[name="comentario_valores_pendientes[]"]').each(function() {
+        var comentario = $(this).val();
+        comentariosValoresPendientes.push(comentario);
+    });
+
+    var concatenacionComentarios = comentariosValoresPendientes.join(', ');
+
+    // Cálculo principal
+    var porcentaje = valorFactura * 0.01;
+    
+    var retencion = $('#chkretencion').is(':checked') ? valorFactura * 0.02 : 0;
+    var restanteuno = valorFactura - porcentaje;
+    var restante = restanteuno - retencion;
+    var compania = restanteuno * 0.02;
+    var restante2 = restanteuno - compania 
+    var totalIntereses = (restante2 * tasaInteres) / 100;
+    var totalFactura = restante2 - totalIntereses;
+    var totalPendientes = totalFactura - descuento - valoresPendientes;
+
+    // Asignar valores a los campos en el modal
+    $('#selectedSocio').text(selectedSocio);
+    $('#tasa_interes2').text(tasaInteres);
+    $('#selectedFecha').text(fechaFactura);
+   
+    $('#modal_valor_inicial').text('$' + valorFactura.toFixed(2));
+
+    if ($('#chkretencion').is(':checked')) {
+        $('#1_percent').val('CON RETENCIÓN');
+        $('#restante_1').val('CON RETENCIÓN');
+        $('#2_percent').val('$' + retencion.toFixed(2));
+        $('#restante_2').val('$' + restante.toFixed(2));
+    } else {
+        $('#1_percent').val('$' + porcentaje.toFixed(2));
+        $('#restante_1').val('$' + restanteuno.toFixed(2));
+        $('#2_percent').val('$' + compania.toFixed(2));
+        $('#restante_2').val('$' + restante2.toFixed(2));
+    }
+
+ 
+    $('#intereses_modal').val('$' + totalIntereses.toFixed(2));
+    $('#total_intereses').val('$' + totalFactura.toFixed(2));
+    $('#total_pendientes').val('$' + totalPendientes.toFixed(2));
+    $('#total_pendientes_detalle').val(concatenacionComentarios || 'No Aplica');
+
+    // Mostrar el modal
+    $('#calcularModal').modal('show');
+}
+
+
+function calcularValoresPendientes() {
+  // Obtener todos los campos "Valor Pendiente"
+  var valoresPendientes = $('input[name="valor_pendiente[]"]').map(function() {
+      // Convertir el valor a un número
+      return parseFloat($(this).val()) || 0;
+  }).get();
+
+  // Sumar todos los valores de los campos "Valor Pendiente"
+  var sumaValoresPendientes = valoresPendientes.reduce(function(total, valor) {
+      return total + valor;
+  }, 0);
+
+  // Obtener todos los comentarios sobre los valores pendientes
+  var comentariosValoresPendientes = $('input[name="comentario_valores_pendientes[]"]').map(function() {
+      // Obtener el valor del comentario
+      return $(this).val();
+  }).get();
+
+  // Concatenar todos los comentarios
+  var concatenacionComentarios = comentariosValoresPendientes.join(' + ');
+
+  // Mostrar el resultado de la suma de los valores pendientes
+  console.log('Suma de los valores pendientes:', sumaValoresPendientes);
+  // Mostrar la concatenación de los comentarios
+  console.log('Comentarios sobre valores pendientes:', concatenacionComentarios);
+}
+
+
+
+</script>
+
+
+<script>
+  $(document).ready(function() {
+      var maxClones = 3; // Número máximo de clones permitidos
+      var cloneCount = 0; // Contador de clones actual
+
+      // Función para clonar la fila
+      $('.btnMore').click(function() {
+          if (cloneCount < maxClones) {
+              // Clonar la fila completa
+              var clonedRow = $('#clonableRow').clone();
+              // Limpiar los valores de los campos clonados
+              clonedRow.find('input[type="number"]').val('');
+              clonedRow.find('input[type="text"]').val('');
+              // Remover el botón de agregar campo del clon
+              clonedRow.find('.btnMore').remove();
+              // Agregar el botón de eliminación a la fila clonada
+              var btnDelete ='<button type="button" class="btn btn-danger btn_remove">X</button>';
+              clonedRow.find('.form-group:last').append(btnDelete);
+              // Agregar el clon al final de la tabla
+              $('#incrementa').append(clonedRow);
+              // Incrementar el contador de clones
+              cloneCount++;
+          } else {
+
+            // Mostrar Sweet Alert si se alcanza el límite máximo de clones
+            Swal.fire({
+             icon: 'error',
+             title: 'Oops...',
+             text: 'Solo se pueden agregar ' + maxClones + ' veces.'
+          });
+          }
+      });
+
+      // Función para eliminar la fila
+      $(document).on('click', '.btn_remove', function(){
+          $(this).closest('tr').remove();
+          // Decrementar el contador de clones al eliminar una fila
+          cloneCount--;
+      }); 
+  });
+</script>
+
+
+  
+  <script>
+    // Selecciona todos los checkboxes con la clase js-switch y crea un objeto Switchery para cada uno
+    var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
+    elems.forEach(function(html) {
+        var switchery = new Switchery(html);
+    });
+   
+</script>
+
+<script>
+    // Función para mostrar u ocultar el div campoValoresPendientes cuando se cambia el estado del checkbox
+    document.getElementById('chkValoresPendientes').addEventListener('change', function() {
+        var campoValoresPendientes = document.getElementById('campoValoresPendientes');
+        campoValoresPendientes.style.display = this.checked ? 'block' : 'none';
+    });
+
+    
+</script>
+
+
+<div class="modal fade" id="detalleFacturaModal" tabindex="-1" role="dialog" aria-labelledby="detalleFacturaLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header" style="background-color:#063051;">
+              <h5 class="modal-title text-white" id="detalleFacturaLabel">Detalles de la Factura</h5>
+              <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <p class="alert alert-info" id="propietario"><strong>Socio:</strong></p>
+              <p class="alert alert-success"><strong>Valor de Factura:</strong> <span id="valorFactura"></span>$</p>
+              <p class="alert alert-success"><strong>Fecha de Compra Factura:</strong> <span id="fechaFactura"></span></p>
+              <p class="alert alert-warning"><strong>Retención(1%):</strong> <span id="retencion"></span>$</p>
+              <p class="alert alert-warning"><strong>Compañía(2%):</strong> <span id="compania"></span>$</p>
+              <p class="alert alert-success"><strong>Intereses(<span id="tasaInteres"></span>%):</strong> <span id="intereses"></span>$</p>
+              <p class="alert alert-danger"><strong>Valor Entregado:</strong> <span id="totalIntereses"></span>$</p>
+              <p class="alert alert-info"><strong>Fecha de Pago:</strong> <span id="fechaPago"></span></p>
+              <p class="estadoFac" id="estadoFac" > <strong> Estado: </strong> </p>
+              <p class="alert alert-success"><strong>Valor a cobrar:</strong> <span id="valorCobrar"></span>$</p>
+              <p class="alert alert-danger"><strong>Total a cobrar con o sin descuentos:</strong> <span id="totalCobrar"></span>$</p>
+              <p class="alert alert-info"><strong>DESCUENTO:</strong> <span id="descuento"></span>$</p>
+              <p class="alert alert-info"><strong>MOTIVO:</strong> <span id="motivo"></span></p>
+          </div>
+          <div class="modal-footer" style="background-color:#063051;">
+              <button type="button" class="btn btn-danger btn-redondo" data-dismiss="modal"> <i class="fa fa-trash"> </i> Cerrar</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var fechaAproxPagoElement = document.querySelector('.fecha-aprox-pago');
+        var fechaAproxPago = new Date(fechaAproxPagoElement.textContent);
+        var opciones = { day: '2-digit', month: 'long', year: 'numeric' };
+        var fechaFormateada = fechaAproxPago.toLocaleDateString('es-ES', opciones);
+        fechaAproxPagoElement.textContent = fechaFormateada;
+    });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      var fechaFacturaElement = document.querySelector('.fecha-factura');
+      var fechaFactura = new Date(fechaFacturaElement.textContent);
+      var opciones = { day: '2-digit', month: 'long', year: 'numeric' };
+      var fechaFormateada = fechaFactura.toLocaleDateString('es-ES', opciones);
+      fechaFacturaElement.textContent = fechaFormateada;
+  });
+</script>
+
+<div class="modal fade" id="calcularModal" tabindex="-1" role="dialog" aria-labelledby="calcularModalLabel" aria-hidden="true">
+  <form method="post" action="{% url 'guardar_factura' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+          <div class="modal-content">
+              <div class="modal-header" style="background-color:#063051; color:white; height:50px;">
+                  <h5 class="modal-title text-center text-white" id="calcularModalLabel"> <i class="fas fa-calculator"> </i> Calculadora de Facturas</h5>
+                  <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <div class="row">
+                      <input type="text" name="idSoc" id="idSoc" style="display:none;" value="">
+                      <input type="text" name="idVeh" id="idVeh" style="display:none;"  value="">
+                      <input type="text" name="valorFac" id="valorFac" style="display:none;" value="">
+                      <input type="text" name="obsFac" id="obsFac" style="display:none;" value="">
+                      <input type="text" name="fechaFac" id="fechaFac" style="display:none;" value="">
+
+                      <div class="col-md-4">
+                          <div class="form-group alert alert-success">
+                              <h6>Socio:</h6>
+                              <h6 style="background-color:#E9ECEF; align-items: center;"><span id="selectedSocio" name="selectedSocio"></span></h6>
+                          </div>
+                          <div class="form-group alert alert-info">
+                              <h6>Fecha Liquidación:</h6>
+                              <h6 style="background-color:#E9ECEF; align-items: center;"><span id="selectedFecha" name="selectedFecha"></span></h6>
+                          </div>
+                          <div class="form-group alert alert-success">
+                              <h6>Valor Factura:</h6>
+                              <h6 style="background-color:#E9ECEF; align-items: center;"><span id="modal_valor_inicial" name="modal_valor_inicial" style="font-weight: bold; font-size: 18px; color: red;"></span></h6>
+                          </div>
+                      </div>
+                      <div class="col-md-4">
+                          <div class="form-group alert alert-info">
+                              <h6>1% (Retención):</h6>
+                              <input type="text" id="1_percent" name="1_percent" class="form-control" readonly>
+                              <h6>Subtotal 1:</h6>
+                              <input type="text" id="restante_1" name="restante_1" class="form-control" readonly>
+                          </div>
+                      </div>
+                      <div class="col-md-4">
+                          <div class="form-group alert alert-info">
+                              <h6>2% (Compañía):</h6>
+                              <input type="text" id="2_percent" name="2_percent" class="form-control" readonly>
+                              <h6>Subtotal 2:</h6>
+                              <input type="text" id="restante_2" name="restante_2" class="form-control" readonly>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-md-4">
+                          <div class="form-group alert alert-success">
+                              <h6>Intereses (%): <span id="tasa_interes2"></span></h6>
+                              <input type="text" name="tasa_interesFac" id="tasa_interesFac" style="display:none;" value="">
+                              <input type="text" id="intereses_modal" name="intereses_modal" class="form-control" readonly>
+                          </div>
+                          <div class="form-group alert alert-warning">
+                              <h6>Total a Entregar (Sin Pendientes):</h6>
+                              <input type="text" id="total_intereses" name="total_intereses" class="form-control" readonly>
+                          </div>
+                          <div class="form-group alert alert-danger">
+                              <h6>Total a Entregar (con Pendientes):</h6>
+                              <input type="text" id="total_pendientes" name="total_pendientes" class="form-control" readonly>
+                          </div>
+                          <div class="form-group alert alert-info">
+                            <h6>DETALLE VALORES PENDIENTES:</h6>
+                            <textarea id="total_pendientes_detalle" name="total_pendientes_detalle" class="form-control" readonly></textarea>
+                        </div>
+                        
+                      </div>
+                      <div class="col-md-8">
+                          <div class="form-group alert alert-info">
+                              <label>Adjuntar Imagen:</label>
+                              <input type="file" style="border-radius:100px;" name="adjunto_pago" id="adjunto_pago" accept="image/*" class="form-control">
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <div class="modal-footer" style="background-color:#063051; color:white; height:70px;">
+                 
+                  <button type="submit" class="btn btn-primary" style="border-radius:100px;" id="calcular"> <i class="fas fa-check"></i> REGISTRAR</button>
+                  <button type="button" class="btn btn-danger " style="border-radius:100px;" data-dismiss="modal">  <i class="fa fa-close"></i> CERRAR</button>
+              </div>
+          </div>
+      </div>
+  </form>
+</div>
+
+
+
+  
+          <style>
+
+            label.error{
+                border:1px solid white;
+                color:white;
+                background-color:#E15B69;
+                padding:5px;
+                padding-left:15px;
+                padding-right:15px;
+                font-size:12px;
+                opacity: 0;
+                  /*visibility: hidden;*/
+                  /*position: absolute;*/
+                  left: 0px;
+                  transform: translate(0, 10px);
+                  /*background-color: white;*/
+                  /*padding: 1.5rem;*/
+                  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+                  width: auto;
+                  margin-top:30px !important;
+        
+        
+                  z-index: 10;
+                  opacity: 1;
+                  visibility: visible;
+                  transform: translate(0, -20px);
+                  transition: all 0.5s cubic-bezier(0.75, -0.02, 0.2, 0.97);
+                  border-radius:10px;
+                  width:100%;
+        
+            }
+        
+            input.error{
+                border:1px solid #E15B69;
+            }
+        
+            label.error:before{
+                 position: absolute;
+                  z-index: -1;
+                  content: "";
+                  right: calc(90% - 10px);
+                  top: -8px;
+                  border-style: solid;
+                  border-width: 0 10px 10px 10px;
+                  border-color: transparent transparent #E15B69 transparent;
+                  transition-duration: 0.3s;
+                  transition-property: transform;
+            }
+        
+        
+        </style>
+        <script type="text/javascript">
+          $("#adjunto_pago").fileinput({
+            allowedFileExtensions:["jpeg","png",'pdf',"jpg","gif"],
+            dropZoneEnabled:true,
+            language: "es",
+            responsive: true,
+            autoWidth: false
+          });
+      
+      </script>
+
+      <script>
+        $(document).ready(function() {
+            $('#socio').change(function() {
+                var selectedSocioId = $(this).val();
+                if (selectedSocioId) {
+                    $.ajax({
+                        url: "{% url 'get_vehiculos_propietario' 999 %}".replace('999', selectedSocioId),
+                  
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(data) {
+                            $('#vehiculo').empty();
+                            $('#vehiculo').append('<option value="">***SELECCIONE UN VEHICULO***</option>');
+                            $.each(data, function(key, value) {
+                                $('#vehiculo').append('<option value="' + value.codigo + '">' + value.placa + '(' + value.categoria +')'+ '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('#vehiculo').empty();
+                    $('#vehiculo').append('<option value="">***SELECCIONE UN SOCIO PRIMERO***</option>');
+                }
+            });
+        });
+    </script>
+
+
+{% include 'administracion/footer.html' %}
+
+

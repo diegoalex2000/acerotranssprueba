@@ -1,0 +1,169 @@
+{% include 'administracion/header.html' %}
+{% load static %}
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="card mt-3">
+    <div class="card-header alert  text-center">
+       <h1 style="color:purple"><i class="fas fa-chart-bar"></i>  <strong>PREDICCIÓN GENERAL DE FACTURACIÓN AL 2024</strong></h1>
+    </div>
+ </div>
+ <br>
+ <div class="accordion" id="accordionExample">
+    <div class="card">
+        <div class="card-header alert alert-primary" id="headingOne">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left" style="color: purple; position: relative;" type="button" data-toggle="collapse" data-target="#collapseTable" aria-expanded="true" aria-controls="collapseTable">
+                    <h5 style="color: purple; display: inline-block; margin-right: 20px;">Ver Detalles</h5>
+                    <i class="fas fa-chevron-down purple-color" style="position: absolute; top: 50%; transform: translateY(-50%); right: 10px;color: purple; font-weight:bold;"></i>
+                </button>
+            </h2>
+        </div>
+
+        <div id="collapseTable" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped horizontal">
+                        <thead class="alert-success">
+                            <tr>
+                                {% for prediccion in predicciones_por_mes %}
+                                    <th style="font-weight:bold;">{{ prediccion.fecha }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for prediccion in predicciones_por_mes %}
+                                    <td style="font-size:12px;">{{ prediccion.prediccion }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#collapseTable').on('shown.bs.collapse', function() {
+            // Cambiar el icono a chevron-up cuando el acordeón se muestra
+            $('#headingOne i').removeClass('fa-chevron-down purple-color').addClass('fa-chevron-up purple-color');
+        });
+
+        $('#collapseTable').on('hidden.bs.collapse', function() {
+            // Cambiar el icono a chevron-down cuando el acordeón se oculta
+            $('#headingOne i').removeClass('fa-chevron-up purple-color').addClass('fa-chevron-down purple-color');
+        });
+    });
+</script>
+
+
+<style>
+    .table th,
+    .table td {
+        text-align: center;
+        font-size: 10px; /* Tamaño de fuente para celdas */
+        
+    }
+    
+    .table th {
+        font-size: 10px; /* Tamaño de fuente para encabezados */
+        font-weight: bold; /* Establecer negrita para el encabezado */
+    }
+    
+    /* Hacer la tabla horizontal en dispositivos móviles */
+    @media (max-width: 767px) {
+        .table th,
+        .table td {
+            font-size: 10px; /* Tamaño de fuente más pequeño en dispositivos móviles */
+            padding: 4px; /* Espacio entre el borde de la celda y el contenido */
+        }
+    }
+    
+</style>
+
+<div>
+    <canvas id="myChart" width="800" height="200"></canvas>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Obtener datos de predicciones desde el contexto de Django
+        var prediccionesPorMes = {{ predicciones_por_mes|safe }};
+    
+        // Preparar datos para el gráfico
+        var meses = prediccionesPorMes.map(function(item) {
+            return item.fecha;
+        });
+        var predicciones = prediccionesPorMes.map(function(item) {
+            return item.prediccion;
+        });
+    
+        // Obtener el índice del mes con la facturación máxima y mínima
+        var indiceMesMaxFacturacion = predicciones.indexOf(Math.max(...predicciones));
+        var indiceMesMinFacturacion = predicciones.indexOf(Math.min(...predicciones));
+    
+                // Obtener los últimos 8 índices
+        var ultimosIndices = predicciones.length - 8;
+
+        // Configurar los colores para las barras del gráfico
+        var colores = predicciones.map(function(prediccion, index) {
+            if (index >= ultimosIndices) {
+                return '#CCCCCC'; // Color para los últimos 8 datos (gris)
+            } else if (index === indiceMesMaxFacturacion) {
+                return '#FC9EB2'; // Color para el mes con más facturación
+            } else if (index === indiceMesMinFacturacion) {
+                return '#FCDE97'; // Color para el mes con menos facturación
+            }else {
+                return '#83C4F0'; // Color predeterminado
+            }
+        });
+
+        // Configurar el gráfico con Chart.js
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: meses,
+                datasets: [{
+                    label: 'Predicciones de facturación',
+                    data: predicciones,
+                    backgroundColor: colores,
+                    hidden: false // Ocultar esta serie en la leyenda
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    display: false, // Mostrar leyenda
+                    
+                }
+            }
+        });
+    
+        // Agregar una línea azul al gráfico
+        myChart.data.datasets.push({
+            label: 'Tendencia',
+            data: predicciones,
+            fill: false,
+            borderColor: '#83C4F0', // Color de la línea
+            borderWidth: 2,
+            type: 'line',
+            hidden: false // Ocultar esta serie en la leyenda
+        });
+    
+        myChart.update(); // Actualizar el gráfico para reflejar los cambios
+    });
+    
+</script>
+
+
+
+{% include 'administracion/footer.html' %}

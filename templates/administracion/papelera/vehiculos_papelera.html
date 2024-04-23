@@ -1,0 +1,217 @@
+{% include 'administracion/header.html' %} 
+{% load static %}
+<div class="card mt-3">
+    <div class="alert  text-center">
+       <h1 style="color:purple"><i class="fas fa-users-cog"></i>  <strong> PAPELERA DE VEHÍCULOS</strong></h1>
+    </div>
+ </div>
+ <br>
+ <div class="table-responsive">
+    {% if vehiculos %}
+      <table class="table table-bordered table-striped " id="tabla-vehiculos">
+        <thead class="alert alert-info text-center">
+          <tr>
+            <th>Vehiculo</th>
+            <th>Detalles</th>
+           
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="table-deleted">
+          {% for vehiculo in vehiculos %}
+            <tr class="deleted-row transparent-content"> 
+              <td>
+                <div class="alert alert-info text-center ">
+                  <h5>COD:</h5>{{ vehiculo.codigo }}
+                </div>
+                 
+                <div class="alert alert-success text-center">
+                  <h5>PLACA:</h5>{{ vehiculo.placa }}
+                </div>
+                <div class="alert alert-success text-center">
+                  <h5>TONELAJE:</h5>{{ vehiculo.tonelaje }}
+                </div>
+              </td>
+              <td>
+                <div class="alert alert-info text-center">
+                  <h5>PROPIETARIO:</h5>{{ vehiculo.usuario_apellido }} {{ vehiculo.usuario_nombre }}
+                </div>
+               
+              
+                
+                <div class="alert {% if vehiculo.estado == 1 %}alert-success{% elif vehiculo.estado == 0 %}alert-danger{% else %}alert-danger{% endif %} text-center">
+                    <h5>ESTADO:</h5>
+                    {% if vehiculo.estado == 3 %}
+                        BORRADO
+                    {% else %}
+                        {{ vehiculo.estado|yesno:"ACTIVO,INACTIVO,BORRADO" }}
+                    {% endif %}
+                </div>
+                
+                <div class="alert alert-primary text-center">
+                  <h5>CATEGORÍA:</h5>{{ vehiculo.categoria_tipo }} 
+                </div>
+            
+              </td>
+         
+              <td class="text-center">
+                <a href="#" class="btn btn-primary btn-circle editar-vehiculo" title="Restaurar" data-id-vehiculo="{{ vehiculo.codigo }}" onclick="confirmRecoveryLogical(this)">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+              </a>
+              
+                <a href="#" class="btn btn-danger btn-circle eliminar-vehiculo" 
+                data-vehiculo-id="{{ vehiculo.codigo }}" 
+                onclick="confirmDelete(this)" 
+                title="Eliminar">
+                 <i class="fa fa-trash"></i>
+             </a>
+             
+              </td>
+              
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="alert alert-danger">No hay vehiculos registrados actualmente.</p>
+    {% endif %}
+  </div>
+  
+<style>
+
+        .deleted-row .cell-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(169, 169, 169, 0.3);
+            z-index: 1;
+        }
+    
+    
+    .table-deleted::before {
+        content: 'REGISTRO ELIMINADO DESDE VEHÍCULOS'; /* Texto a mostrar encima del registro */
+        position: absolute; /* Establecemos posición absoluta */
+        top: 50%; /* Posicionamos en el centro vertical */
+        left: 50%; /* Posicionamos en el centro horizontal */
+        transform: translate(-50%, -50%); /* Centramos el texto */
+        color: rgba(50, 50, 50, 0.8); /* Color del texto gris oscuro y transparente */
+        text-align: center; /* Alineamos el texto al centro */
+        font-weight: bold; /* Establecemos negrita al texto */
+        font-style: italic; /* Establecemos cursiva al texto */
+        font-size: 24px; /* Tamaño de fuente más grande */
+        line-height: 1.5; /* Altura de línea */
+        padding: 10px; /* Añadimos un poco de espacio alrededor del texto */
+        z-index: 1; /* Colocamos el pseudo-elemento encima del contenido de la fila */
+        font-family: 'Courier New', monospace;
+   
+    }
+    .transparent-content td {
+        background-color: rgba(255, 255, 255, 0.1); /* Fondo transparente */
+    }
+    
+    
+    
+</style>
+<script>
+    function confirmRecoveryLogical(button) {
+        var vehiculoId = button.getAttribute('data-id-vehiculo');
+        iziToast.question({
+            rtl: false,
+            theme: 'dark',
+            icon: 'fa-solid fa-arrow-rotate-left',
+            progressBarColor: 'rgb(0, 255, 184)',
+            backgroundColor: '#5E5E5E',
+            layout: 2,
+            timeout: 10000,
+            close: false,
+            overlay: true,
+            toastOnce: true,
+            zindex: 999,
+            title: 'Recuperar Registro',
+            message: '<div class="toast-message" style="color: white;">¿Estás seguro que deseas restaurar este registro?</div>',
+            position: 'center',
+            buttons: [
+                ['<button style="color:white; font-weight:bold;"><b>Confirmar</b></button>', function (instance, toast) {
+                    window.location.href = "{% url 'recovery_vehiculos_logico' 999 %}".replace('999', vehiculoId);
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }],
+                ['<button style="color:white; font-weight:bold;">Cancelar</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }]
+            ]
+        });
+    }
+</script>
+
+
+
+  <script>
+    function confirmDelete(button) {
+        var vehiculo_id = button.getAttribute('data-vehiculo-id');
+        //alert(vehiculo_id);
+        iziToast.question({
+            rtl: false, // Dirección del texto (de derecha a izquierda)
+            theme: 'dark', // Tema del mensaje
+            icon: 'fa fa-trash', // Icono del mensaje
+            progressBarColor: 'rgb(0, 255, 184)', // Color de la barra de progreso
+            backgroundColor: '#5E5E5E', // Color
+
+            layout: 2,
+            timeout: 10000,
+            close: false,
+            overlay: true,
+            toastOnce: true,
+            zindex: 999,
+            title: 'Eliminar Registro Permanente',
+            message: '<div class="toast-message" style="color: white;">¿Estás seguro de eliminar este vehiculo de forma permanente?</div>', // Agregar estilo CSS para el color del texto
+            position: 'center',
+            buttons: [
+                ['<button style="color:white; font-weight:bold;"><b>Confirmar</b></button>', function (instance, toast) {
+                    // Ejecutar la acción de eliminación
+                    window.location.href = "{% url 'eliminar_vehiculos_def' 999 %}".replace('999', vehiculo_id);
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }],
+                ['<button style="color:white; font-weight:bold;">Cancelar</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }]
+            ]
+        });
+    }
+</script>
+
+<style>
+    .alert-error {
+        /* Estilos para mensajes de error */
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+</style>
+
+   <!-- Agrega un script al final del cuerpo para mostrar los mensajes -->
+   <script>
+    // Verifica si hay un mensaje de éxito
+    {% if success_message %}
+        iziToast.success({
+            title: 'Éxito',
+            message: '{{ success_message }}',
+            position: 'topRight'
+        });
+    {% endif %}
+    
+    // Verifica si hay un mensaje de error
+    {% if error_message %}
+        iziToast.error({
+            title: 'Error',
+            message: '{{ error_message }}',
+            position: 'topRight'
+        });
+    {% endif %}
+
+   
+      
+
+
+{% include 'administracion/footer.html' %} 

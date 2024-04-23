@@ -1,0 +1,211 @@
+{% include 'administracion/header.html' %}
+{% load static %}
+<!-- Agrega la referencia al CDN de Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Agrega la referencia al CDN del complemento de anotaciones de Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+
+<script src="
+https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js
+"></script>
+
+<div class="card mt-3">
+   <div class="card-header alert  text-center">
+      <h1 style="color:purple"><i class="fas fa-tachometer"></i>  <strong>DASHBOARD</strong></h1>
+   </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-4">
+        <div class="card alert alert-primary">
+            <div class="card-body">
+                <h5 class="card-title"> <i class="fa-solid fa-file-invoice"></i> Total de Facturas</h5>
+                <h3 class="text-center">{{ total_fact }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card alert alert-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> Total Facturas Compradas</h5>
+                <h3 class="text-center ">{{ total_compradas }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card alert alert-success">
+            <div class="card-body">
+                <h5 class="card-title"> <i class="fa-solid fa-hand-holding-dollar"></i> Total de Facturas Pagadas</h5>
+                <h3 class="text-center ">{{ total_pagadas }}</h3>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<div class="alert alert-danger container">
+    <span style="font-weight:bold;"> <i class="fa-solid fa-chart-line"></i> MES Y AÑO CON MAYOR GANANCIA: <span style="color:red; font-weight:bold" id="mesMaxIntereses"></span></span>
+</div>
+
+<!-- Agrega el elemento canvas para el gráfico -->
+<canvas id="interesesPorMesChart" width="800" height="200"></canvas>
+
+<!-- Agrega el script de Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+
+<script type="text/javascript">
+    var ctx = document.getElementById('interesesPorMesChart').getContext('2d');
+
+    var meses_anios = JSON.parse('{{ meses_anios|safe }}');
+    var intereses = JSON.parse('{{ intereses_json|safe }}');
+
+    // Convertir intereses a un array
+    var interesesArray = Object.values(intereses);
+
+    // Encontrar el índice del mes con el ingreso máximo
+    var indiceMax = interesesArray.indexOf(Math.max(...interesesArray));
+
+    // Encontrar el índice del mes con el ingreso mínimo
+    var indiceMin = interesesArray.indexOf(Math.min(...interesesArray));
+
+    var mejorMes = Math.max(...interesesArray);
+    var peorMes = Math.min(...interesesArray);
+
+
+    // Crear un array para los colores de las barras
+    var colores = [];
+for (var i = 0; i < interesesArray.length; i++) {
+    if (i === indiceMax) {
+        colores.push('rgba(255, 99, 132, 0.6)'); // Rosa para el mes con el máximo ingreso
+    } else if (i === indiceMin) {
+        colores.push('rgba(255, 205, 86, 0.6)'); // Amarillo para el mes con el mínimo ingreso
+    } else {
+        colores.push('rgba(54, 162, 235, 0.6)'); // Azul claro para el resto de los meses
+    }
+}
+// Función para controlar la visibilidad de la leyenda
+function handleLegendVisibility(chart, index) {
+    var meta = chart.getDatasetMeta(index);
+    if (index === 0) {
+        meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
+    } else {
+        chart.data.datasets[index].hidden = !chart.data.datasets[index].hidden;
+    }
+    chart.update();
+}
+
+// Crear el gráfico combinado de barras y líneas
+var chart = new Chart(ctx, {
+    type: 'bar', // Tipo de gráfico principal (barras)
+    data: {
+        labels: meses_anios,
+        datasets: [
+            {
+                label: '', // Etiqueta en blanco para la primera serie
+                data: interesesArray,
+                backgroundColor: colores, // Colores para las barras
+                borderColor: colores.map(color => color.replace('0.6', '1')), // Bordes de las barras
+                borderWidth: 1
+            },
+            {
+                label: 'Mejor mes',
+                data: [mejorMes],
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderWidth: 0,
+                hidden: true // Ocultar esta serie en la leyenda
+            },
+            {
+                label: 'Peor mes',
+                data: [peorMes],
+                backgroundColor: 'rgba(255, 205, 86, 0.6)',
+                borderWidth: 0,
+                hidden: true // Ocultar esta serie en la leyenda
+            },
+            {
+                label: 'Tendencia',
+                type: 'line', // Tipo de gráfico secundario (línea)
+                data: interesesArray, // Aquí debes proporcionar los datos de la línea
+                fill: false,
+                borderColor: 'rgba(54, 162, 235, 0.6)', // Color de la línea
+                borderWidth: 2,
+                pointRadius: 5, // Ocultar los puntos
+                yAxisID: 'tendencia' // Asociar la serie a un eje Y específico
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: {
+                beginAtZero: true
+            },
+            y: {
+                beginAtZero: true
+            },
+            tendencia: { // Configuración del eje Y para la serie de tendencia
+                type: 'linear', // Tipo de escala para el eje Y
+                position: 'right', // Posición del eje Y
+                grid: {
+                    display: false // Ocultar las líneas de la cuadrícula para este eje Y
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top', // Posición de la leyenda (arriba)
+                display: false, // Mostrar la leyenda
+                labels: {
+                    boxWidth: 50, // Ancho de las cajas de color de la leyenda
+                    font: {
+                        size: 12 // Tamaño de la fuente de la leyenda
+                    }
+                },
+                onClick: function(e, legendItem) {
+                    handleLegendVisibility(this.chart, legendItem.datasetIndex);
+                }
+            }
+        }
+    }
+});
+
+
+</script>
+
+
+<script type="text/javascript">
+    // Definir los nombres de los meses en español
+    var meses_espanol = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    // Suponiendo que tienes un arreglo de strings donde cada elemento contiene el nombre del mes y el año en inglés
+    var meses_anios = JSON.parse('{{ meses_anios|safe }}');
+    var intereses = JSON.parse('{{ intereses_json|safe }}');
+
+    var interesesArray = Object.values(intereses);
+    var indiceMax = interesesArray.indexOf(Math.max(...interesesArray));
+
+    // Obtener el nombre del mes y el año en inglés correspondiente al índice máximo
+    var mesAnioMaxIngles = meses_anios[indiceMax];
+
+    // Separar el nombre del mes y el año
+    var partesMesAnio = mesAnioMaxIngles.split(' ');
+    var mesMaxIngles = partesMesAnio[0]; // Nombre del mes en inglés
+    var anioMax = partesMesAnio[1]; // Año
+
+    // Traducir el nombre del mes a español
+    var mesMax = meses_espanol[new Date(Date.parse(mesMaxIngles + " 1, 2000")).getMonth()];
+
+    var ingresoMax = interesesArray[indiceMax].toFixed(2); // Redondear el ingreso máximo a 2 decimales
+
+    // Mostrar el mes y el año con el máximo ingreso en el elemento HTML
+    document.getElementById('mesMaxIntereses').innerText = mesMax + ' ' + anioMax + '(' + ingresoMax+'$)';
+</script>
+
+
+  
+
+
+{% include 'administracion/footer.html' %}
+
+
+

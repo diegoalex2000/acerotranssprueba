@@ -1,0 +1,58 @@
+  
+{% include 'administracion/header.html' %}
+{% load static %}
+
+<br>
+
+<div class="card mt-3">
+   <div class="alert  text-center">
+      <h1 style="color:purple"><i class="fas fa-chart-bar"></i>  <strong>PREDICCIONES</strong></h1>
+   </div>
+</div>
+<br>
+
+    <div class="card-header alert alert-primary">
+       <h3>  <strong>SELECCIONE UNA OPCIÓN:</strong></h3>
+    </div>
+ 
+ <br>
+
+
+ <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-4 col-sm-6"> <!-- Aquí he cambiado col-md-3 a col-md-3 col-sm-6 -->
+            <a href="/dashboard/dashboard_general/" class="card-link btn-block mb-3"> 
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <h5 class="card-title text-white"><i class="fas fa-chart-bar"></i> FACTURACIÓN GENERAL</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-sm-6"> <!-- Aquí he cambiado col-md-3 a col-md-3 col-sm-6 -->
+            <a href="/dashboard/dashboard_socio/" class="card-link btn-block mb-3" style="height: 18rem;">
+                <div class="card bg-danger ">
+                    <div class="card-body">
+                        <h5 class="card-title text-white"><i class="fas fa-user"></i> FACTURACIÓN POR SOCIO</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+
+        <div class="col-md-4 col-sm-6"> <!-- Aquí he cambiado col-md-3 a col-md-3 col-sm-6 -->
+            <a href="/dashboard/dashboard_inversion/" class="card-link btn-block mb-3" >
+                <div class="card bg-danger ">
+                    <div class="card-body">
+                        <h5 class="card-title text-white"><i class="fa fa-dollar"></i> GANANCIAS POR INVERSIÓN</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+
+{% include 'administracion/footer.html' %}
+

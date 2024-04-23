@@ -1,0 +1,769 @@
+{% include 'administracion/header.html' %} 
+{% load static %}
+<br>
+
+<div class="card mt-3">
+   <div class="card-header alert  text-center">
+      <h1 style="color:purple"><i class="fas fa-users-cog"></i>  <strong>ADMINISTRACIÓN DE USUARIOS</strong></h1>
+   </div>
+</div>
+<br>
+<div class="text-center">
+  <a href="#" id="btnAgregarUsuario" data-toggle="modal" data-target="#agregarUsuario" class="btn btn-success redondo"> <i class="fa fa-plus"></i> Agregar Usuario</a>
+</div>
+
+<br>
+<div class="table-responsive">
+    {% if usuarios %}
+      <table class="table table-bordered table-striped" id="tabla-usuarios">
+        <thead class="alert alert-info text-center">
+          <tr>
+            <th>Usuario</th>
+            <th>Detalle 1</th>
+            <th>Detalle 2</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for usuario in usuarios %}
+            <tr>
+              <td>
+                <div class="alert alert-info text-center">
+                  <h5>COD:</h5>{{ usuario.codigo }}
+                </div>
+                <div class="alert alert-info text-center" style="max-width: 150px; margin: auto;">
+                   
+                  {% if usuario.foto %}
+                  <img src="{% static usuario.foto %}" alt="Foto de perfil" style="max-width: 100px; max-height: 100px; border-radius: 5%;">
+              {% else %}
+                  <div class="alert alert-danger text-center" style="width: 100px; height: 100px; line-height: 100px; border-radius: 50%;">SN</div>
+              {% endif %}     
+                </div>
+                    <br>                  
+                <div class="alert alert-success text-center">
+                  <h5>Cédula:</h5>{{ usuario.cedula }}
+                </div>
+              </td>
+              <td>
+                <div class="alert alert-info text-center">
+                  <h5>Apellidos:</h5>{{ usuario.apellido }}
+                </div>
+                <div class="alert alert-info text-center">
+                  <h5>Nombres:</h5>{{ usuario.nombre }}
+                </div>
+               
+                <div class="alert alert-success text-center">
+                  <h5>Rol:</h5>{{ usuario.rol}}
+                </div>
+              </td>
+              <td>
+               
+                <div class="alert {% if usuario.estado == 1 %}alert-success{% else %}alert-danger{% endif %} text-center">
+                    <h5>Estado:</h5>{{ usuario.estado|yesno:"ACTIVO,INACTIVO" }}
+                  </div>
+                  
+                <div class="alert alert-warning text-center">
+                  <h5>Correo:</h5>{{ usuario.correo }}
+                </div>
+                <div class="alert alert-success text-center">
+                  <h5>Teléfono:</h5>{{ usuario.telefono }}
+                </div>
+                <!-- Mostrar otras columnas aquí -->
+              </td>
+              <td class="text-center">
+                <a href="#" class="btn btn-primary btn-circle ver-vehiculos" title="Ver mis Vehiculos" data-id-usu="{{ usuario.codigo }}" data-toggle="modal" data-target="#verVehiculosModal">
+                  <i class="fa fa-bars"></i> 
+              </a>
+              
+                <a href="#" class="btn btn-warning btn-circle editar-usuario" title="Editar" data-id-usu="{{ usuario.codigo }}" data-toggle="modal" data-target="#editarUsuarioModal">
+                  <i class="fa fa-edit"></i> 
+              </a>
+              
+                <a href="#" class="btn btn-danger btn-circle eliminar-usuario" 
+                data-usuario-id="{{ usuario.codigo }}" 
+                onclick="confirmDelete(this)" 
+                title="Eliminar">
+                 <i class="fa fa-trash"></i>
+             </a>
+             
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="alert alert-danger">No hay usuarios registrados actualmente.</p>
+    {% endif %}
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="verVehiculosModal" tabindex="-1" role="dialog" aria-labelledby="verVehiculosModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alert alert-primary">
+                <h5 class="modal-title" id="verVehiculosModalLabel">Vehículos Asociados</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="vehiculosModalBody">
+                <!-- Aquí se mostrarán los vehículos -->
+            </div>
+            <div class="modal-footer alert alert-primary">
+                <button type="button" class="btn btn-danger btn-redondo" data-dismiss="modal"> <i class="fa fa-close"> </i> Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+  
+
+<script>
+  $(document).ready(function() {
+      $('#verVehiculosModal').on('show.bs.modal', function(event) {
+          var button = $(event.relatedTarget);
+          var usuario_id = button.data('id-usu');
+          $.ajax({
+            url: "{% url 'obtener_vehiculos_usuario' 999 %}".replace('999', usuario_id),
+            type: 'GET',
+            success: function(response) {
+                var vehiculos = response.vehiculos;
+                var modalBody = $('#vehiculosModalBody');
+                modalBody.empty();
+                
+                if (vehiculos.length > 0) {
+                    // Imprimir el nombre y apellido del dueño del vehículo una vez
+                    modalBody.append('<div class="alert alert-success">Nombre del dueño: ' + vehiculos[0].nombre_prop + ' ' + vehiculos[0].apellido_prop + '</div>');
+                    
+                    vehiculos.forEach(function(vehiculo) {
+                        var color = '';
+                        var estado = '';
+                        
+                        if (vehiculo.estado === 1) {
+                            color = 'green'; // verde
+                            estado = 'Activo';
+                        } else if (vehiculo.estado === 0) {
+                            color = 'red'; // rojo
+                            estado = 'Inactivo';
+                        } else {
+                            color = 'gray'; // plomo
+                            estado = 'Desactivado';
+                        }
+                        
+                        modalBody.append('<div class="alert alert-primary">PLACA: ' + vehiculo.placa + '</div>');
+                        modalBody.append('<p>Tonelaje: ' + vehiculo.tonelaje + '</p>');
+                        modalBody.append('<p>Estado: <span style="color: ' + color + ';">' + estado + '</span></p>');
+                        modalBody.append('<p>Tipo de Categoría: ' + vehiculo.categoria + '</p>');
+                    });
+                } else {
+                    modalBody.append('<div class="alert alert-danger">No hay vehículos asociados.</div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error al obtener los vehículos:', error);
+            }
+        });
+      });
+  });
+</script>
+
+
+
+  
+
+  <script>
+    function confirmDelete(button) {
+        var usuarioId = button.getAttribute('data-usuario-id');
+        iziToast.question({
+            rtl: false, // Dirección del texto (de derecha a izquierda)
+            theme: 'dark', // Tema del mensaje
+            icon: 'fa fa-trash', // Icono del mensaje
+            progressBarColor: 'rgb(0, 255, 184)', // Color de la barra de progreso
+            backgroundColor: '#5E5E5E', // Color
+
+            layout: 2,
+            timeout: 10000,
+            close: false,
+            overlay: true,
+            toastOnce: true,
+            zindex: 999,
+            title: 'Eliminar Usuario',
+            message: '<div class="toast-message" style="color: white;">¿Estás seguro de eliminar este usuario?</div>', // Agregar estilo CSS para el color del texto
+            position: 'center',
+            buttons: [
+                ['<button style="color:white; font-weight:bold;"><b>Confirmar</b></button>', function (instance, toast) {
+                    // Ejecutar la acción de eliminación
+                    window.location.href = "{% url 'eliminar_usuario_logico' 999 %}".replace('999', usuarioId);
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }],
+                ['<button style="color:white; font-weight:bold;">Cancelar</button>', function (instance, toast) {
+                    instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                }]
+            ]
+        });
+    }
+</script>
+
+
+
+<!-- Modal -->
+<div id="agregarUsuario" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+  
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header alert alert-primary" >
+          <h4 class="modal-title"> <i class="fa fa-user"></i> Nuevo Usuario</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="formAgregarUsuario" method="post" enctype="multipart/form-data" action="{% url 'agregar_usuario' %}">
+            {% csrf_token %}
+            <div class="form-group text-center">
+                <h4 for="cedula">Cédula:</h4>
+                <input type="number" class="form-control btn-redondo" id="cedula_usu" placeholder="Ingrese su identificación" name="cedula_usu" required>
+            </div>
+              <div class="form-group text-center">
+                  <h4 for="nombre">Nombre:</h4>
+                  <input type="text" class="form-control btn-redondo" oninput="convertirAMayusculas(this)"  placeholder="Ingrese sus dos nombres" id="nombre" name="nombre" required>
+              </div>
+              <div class="form-group text-center">
+                  <h4 for="apellido">Apellido:</h4>
+                  <input type="text" class="form-control btn-redondo" oninput="convertirAMayusculas(this)"  placeholder="Ingrese sus dos apellidos" id="apellido_usu" name="apellido_usu" required>
+              </div>
+              <div class="form-group text-center">
+                  <h4 for="telefono">Teléfono:</h4>
+                  <input type="tel" class="form-control btn-redondo" placeholder="Ingrese su numero de teléfono" id="telefono_usu" name="telefono_usu" required>
+              </div>
+  
+          
+              <div class="form-group text-center">
+                  <h4 for="estado">Estado:</h4>
+                  <select class="form-control btn-redondo" id="estado_usu" name="estado_usu" required>
+                    <option value="">-Seleccione un Estado-</option>
+                    <option value="1">ACTIVO</option>
+                    <option value="0">INACTIVO</option>
+  
+                  </select>
+  
+              </div>
+              <div class="form-group text-center">
+                  <h4 for="email">Email:</h4>
+                  <input type="email" class="form-control btn-redondo" onblur="convertirAMinusculas(this)" id="email_usu" placeholder="Ingrese su correo" name="email_usu" required>
+              </div>
+              <div class="form-group text-center">
+                  <h4 for="fecha_ingreso">Fotografia:</h4>
+                  <input type="file" class="form-control btn-redondo" accept="image/*" id="foto_usu" name="foto_usu" required>
+              </div>
+              <hr >
+  
+        </div>
+        <div class="modal-footer alert alert-secondary">
+          <div class="form-group text-center">
+          <button type="submit" id="botonEnviar" class="btn btn-primary btn-redondo"> <i class="fa fa-check"></i> Guardar</button>
+            <button type="button" class="btn btn-danger btn-redondo" data-dismiss="modal"> <i class="fa fa-xmark"></i> Cerrar</button>
+          </div>
+          </form>
+        </div>
+      </div>
+  
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="editarUsuarioModal" tabindex="-1" role="dialog" aria-labelledby="editarUsuarioModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header alert alert-primary">
+        <h4 class="modal-title"> <i class="fa fa-user"></i> Editar Usuario</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formEditarUsuario" method="post" enctype="multipart/form-data" action="{% url 'actualizar_usuario' %}" >
+          {% csrf_token %}
+          <input type="hidden" name="usuario_cod" id="usuario_cod">
+          
+          <div class="form-group text-center">
+              <h4 for="cedula">Cédula:</h4>
+              <input type="number" class="form-control btn-redondo" id="cedula_usu_editar" placeholder="Ingrese su identificación" name="cedula_usu" required>
+          </div>
+            <div class="form-group text-center">
+                <h4 for="nombre">Nombre:</h4>
+                <input type="text" class="form-control btn-redondo" oninput="convertirAMayusculas(this)"  placeholder="Ingrese sus dos nombres" id="nombre_usu_editar" name="nombre_usu" required>
+            </div>
+            <div class="form-group text-center">
+                <h4 for="apellido">Apellido:</h4>
+                <input type="text" class="form-control btn-redondo" oninput="convertirAMayusculas(this)"  placeholder="Ingrese sus dos apellidos" id="apellido_usu_editar" name="apellido_usu" required>
+            </div>
+            <div class="form-group text-center">
+                <h4 for="telefono">Teléfono:</h4>
+                <input type="tel" class="form-control btn-redondo" placeholder="Ingrese su numero de teléfono" id="telefono_usu_editar" name="telefono_usu" required>
+            </div>
+
+            <div class="form-group text-center">
+                <h4 for="estado">Estado:</h4>
+                <select class="form-control btn-redondo" id="estado_usu_editar" name="estado_usu" required>
+                  <option value="">-Seleccione un Estado-</option>
+                  <option value="1">ACTIVO</option>
+                  <option value="0">INACTIVO</option>
+                </select>
+            </div>
+            <div class="form-group text-center">
+                <h4 for="email">Email:</h4>
+                <input type="email" class="form-control btn-redondo" onblur="convertirAMinusculas(this)" id="email_usu_editar" placeholder="Ingrese su correo" name="email_usu" required>
+            </div>
+            <div class="form-group text-center">
+                <h4 for="fecha_ingreso">Fotografia:</h4>
+                <input type="file" class="form-control btn-redondo" accept="image/*" id="foto_usu2" name="foto_usu">
+            </div>
+            <hr >
+
+      </div>
+      <div class="modal-footer alert alert-secondary">
+        <div class="form-group text-center">
+            <button type="submit" id="botonEnviarEditar" class="btn btn-primary btn-redondo"> <i class="fa fa-pen"></i> Editar</button>
+            <button type="button" class="btn btn-danger btn-redondo" data-dismiss="modal"> <i class="fa fa-xmark"></i> Cerrar</button>
+        </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Declarar una variable global para almacenar la ruta de la foto
+  var fotoUrl = "";
+
+  $(document).ready(function() {
+    $('#editarUsuarioModal').on('show.bs.modal', function(event) {
+      var button = $(event.relatedTarget);
+      var usuarioId = button.data('id-usu');
+
+      $.ajax({
+        url: "{% url 'obtener_usuario' 999 %}".replace('999', usuarioId),
+        type: 'GET',
+        success: function(data) {
+          // Asignar los valores del usuario al formulario de edición
+          $('#usuario_cod').val(data.codigo);
+          $('#cedula_usu_editar').val(data.cedula);
+          $('#nombre_usu_editar').val(data.nombre);
+          $('#apellido_usu_editar').val(data.apellido);
+          $('#telefono_usu_editar').val(data.telefono);
+          $('#email_usu_editar').val(data.correo);
+          //$('#imagen_ruta').val(data.foto);
+
+          fotoUrl = data.foto; // Asignar la foto a la variable global
+
+          // Verificar y seleccionar el estado correcto en el select
+          var estado = data.estado;
+          if (estado == 1) {
+            $('#estado_usu_editar').val('1');
+          } else if (estado == 0) {
+            $('#estado_usu_editar').val('0');
+          }
+
+          // Alertar la fotoUrl después de que se actualice
+          //alert(fotoUrl);
+
+          // Configurar el plugin File Input fuera de la función
+          $('#foto_usu2').fileinput({
+            language: 'es',
+            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif'],
+            maxFileSize: 10048,
+            maxFileCount: 1,
+            browseClass: 'btn btn-primary',
+            removeClass: 'btn btn-danger',
+            cancelClass: 'btn btn-danger',
+            uploadClass: 'btn btn-secondary',
+            theme: 'fas',
+            browseIcon: '<i class="fas fa-image"></i>',
+            removeIcon: '<i class="fas fa-trash"></i>',
+            uploadIcon: '<i class="fas fa-upload"></i>',
+            CaptionIcon: '<i class="fas fa-search"></i>',
+            initialPreview: [
+              '{% static "/" %}' + fotoUrl // Utilizar la variable global para la URL de la foto
+            ],
+            overwriteInitial: true,
+            initialPreviewAsData: true
+          });
+        },
+        error: function(xhr, status, error) {
+          console.error('Error al obtener datos del usuario:', error);
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+  <script>
+    // Función para abrir el modal
+    function abrirModalAgregarUsuario() {
+        var modal = document.getElementById('modalAgregarUsuario');
+        modal.style.display = 'block';
+    }
+    </script>
+    
+        <script type="text/javascript">
+          // Obtener el token CSRF del formulario
+        var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+    
+          $(document).ready(function() {
+            $("#formEditarUsuario").validate({
+                rules: {
+                  cedula_usu:{
+                  required:true,
+                  minlength:10,
+                  maxlength:10,
+                  cedula:true,
+                  remote: {
+                    url: '{% url 'validar_cedula_edicion' %}',
+                    type: 'POST',
+                    data: {
+                        cedula: function() {
+                            return $('#cedula_usu').val();
+                        },
+                        usuario_id: function() {
+                         
+                            return $('#usuario_cod').val();
+                        },
+                        csrfmiddlewaretoken: csrftoken
+                    }
+                }
+            
+                 
+                  },
+                    nombre_usu: {
+                        required: true,
+                        minlength: 2
+                    },
+                    apellido_usu: {
+                        required: true,
+                        minlength: 2
+                    },
+                    edad_usu: {
+                        required: true,
+                        min: 18,
+                        max: 35,
+                        digits:true
+                    },
+                    telefono_usu: {
+                        required: true,
+                        minlength: 10,
+                        maxlength: 10,
+                        digits:true
+                    },
+                   
+                    estado_usu: {
+                        required: true
+                    },
+                    email_usu: {
+                        required: true,
+                        email: true,
+                        remote: {
+                          url: '{% url 'validar_correo_edicion' %}',
+                          type: 'POST',
+                          data: {
+                              cedula: function() {
+                                  return $('#email_usu').val();
+                              },
+                              usuario_id: function() {
+                               
+                                  return $('#usuario_cod').val();
+                              },
+                              csrfmiddlewaretoken: csrftoken
+                          }
+                      }
+                    
+                    },
+                   
+                   
+                },
+                messages: {
+                  cedula_usu: {
+                      required: "Por favor, ingrese su cédula.",
+                      minlength: "La cédula debe tener exactamente 10 dígitos.",
+                      maxlength: "La cédula debe tener exactamente 10 dígitos.",
+                      remote:'Este número de cédula ya se encuentra registrado',
+                      cedula:'Número de cedula no es real'
+                      //digits: "Solo se permiten numeros."
+                  },
+                  nombre: {
+                      required: "Por favor, ingrese su nombre.",
+                      minlength: "El nombre debe tener al menos 2 caracteres."
+                  },
+                  apellido_usu: {
+                      required: "Por favor, ingrese su apellido.",
+                      minlength: "El apellido debe tener al menos 2 caracteres."
+                  },
+                  edad_usu: {
+                      required: "Por favor, ingrese su edad.",
+                      min: "Debe tener al menos 18 años.",
+                      max: "Debe tener menos de 100 años."
+                  },
+                  telefono_usu: {
+                      required: "Por favor, ingrese su número de teléfono.",
+                      minlength: "El número de teléfono debe tener exactamente 10 dígitos.",
+                      maxlength: "El número de teléfono debe tener exactamente 10 dígitos.",
+                        // digits:"Solo se permiten números"
+                  },
+                 
+                  estado_usu: {
+                      required: "Por favor, seleccione un estado."
+                  },
+                  email_usu: {
+                      required: "Por favor, ingrese su correo electrónico.",
+                      email: "Por favor, ingrese un correo electrónico válido.",
+                      remote:'Este correo ya se encuentra registrado'
+                  },
+                
+              },
+              errorElement: 'span',
+              errorPlacement: function(error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+              },
+              highlight: function(element, errorClass, validClass) {
+                $(element).addClass('is-invalid').removeClass('is-valid');
+              },
+              unhighlight: function(element, errorClass, validClass) {
+                $(element).addClass('is-valid').removeClass('is-invalid');
+              }
+            });
+          
+            $.validator.addMethod("pwcheck", function(value) {
+               return /^[A-Za-z0-9\d=!\-@._*]*$/.test(value) // consists of only these
+                   && /[a-z]/.test(value) // has a lowercase letter
+                   && /\d/.test(value) // has a digit
+                   && /[A-Z]/.test(value) // has an uppercase letter
+                   && /[\=!\-@._*]/.test(value) // has a special character
+            });
+          });
+          
+          </script>
+
+          <script type="text/javascript">
+            $(document).ready(function() {
+                // Obtener el token CSRF del formulario
+                var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+            
+                $("#formAgregarUsuario").validate({
+                    rules: {
+                        cedula_usu: {
+                            required: true,
+                            minlength: 10,
+                            maxlength: 10,
+                            cedula: true,
+                            remote: {
+                                url: '{% url 'validar_cedula' %}',
+                                type: 'POST',
+                                data: {
+                                    // Aquí se pasa la cédula como parámetro a la función validar_cedula
+                                    cedula: function() {
+                                        return $('#cedula_usu').val();
+                                    },
+                                    csrfmiddlewaretoken: csrftoken
+                                }
+                            }
+                        },
+                        nombre: {
+                            required: true,
+                            minlength: 2
+                        },
+                        apellido_usu: {
+                            required: true,
+                            minlength: 2
+                        },
+                        
+                        telefono_usu: {
+                            required: true,
+                            minlength: 10,
+                            maxlength: 10,
+                            digits: true
+                        },
+                        estado_usu: {
+                            required: true
+                        },
+                        email_usu: {
+                            required: true,
+                            email: true,
+                            remote: {
+                              url: '{% url 'validar_correo' %}',
+                              type: 'POST',
+                              data: {
+                                  // Aquí se pasa la cédula como parámetro a la función validar_cedula
+                                  email: function() {
+                                      return $('#email_usu').val();
+                                  },
+                                  csrfmiddlewaretoken: csrftoken
+                              }
+                          }
+                        },
+                        foto_usu: {
+                            required: true,
+                            extension: "jpeg|jpg|png|gif"
+                        }
+                    },
+                    messages: {
+                        // Mensajes de error para cada campo
+                        cedula_usu: {
+                            required: "Por favor, ingrese su cédula.",
+                            minlength: "La cédula debe tener exactamente 10 dígitos.",
+                            maxlength: "La cédula debe tener exactamente 10 dígitos.",
+                            remote:'Este número de cédula ya se encuentra registrado',
+                            cedula:'Número de cedula no es real o no es Ecuatoriana'
+                            //digits: "Solo se permiten numeros."
+                        },
+                        nombre_usu: {
+                            required: "Por favor, ingrese su nombre.",
+                            minlength: "El nombre debe tener al menos 2 caracteres."
+                        },
+                        apellido_usu: {
+                            required: "Por favor, ingrese su apellido.",
+                            minlength: "El apellido debe tener al menos 2 caracteres."
+                        },
+                        
+                        telefono_usu: {
+                            required: "Por favor, ingrese su número de teléfono.",
+                            minlength: "El número de teléfono debe tener exactamente 10 dígitos.",
+                            maxlength: "El número de teléfono debe tener exactamente 10 dígitos.",
+                            // digits:"Solo se permiten números"
+                        },
+                        estado_usu: {
+                            required: "Por favor, seleccione un estado."
+                        },
+                        email_usu: {
+                            required: "Por favor, ingrese su correo electrónico.",
+                            email: "Por favor, ingrese un correo electrónico válido.",
+                            remote:'Este correo ya se encuentra registrado'
+                        },
+                        foto_usu: {
+                            required: "Por favor, suba una foto.",
+                            extension: "La foto debe ser en formato jpeg, jpg, png o gif."
+                        }
+                    },
+                    errorElement: 'span',
+                    errorPlacement: function(error, element) {
+                        error.addClass('invalid-feedback');
+                        element.closest('.form-group').append(error);
+                    },
+                    highlight: function(element, errorClass, validClass) {
+                        $(element).addClass('is-invalid').removeClass('is-valid');
+                    },
+                    unhighlight: function(element, errorClass, validClass) {
+                        $(element).addClass('is-valid').removeClass('is-invalid');
+                    }
+                });
+            
+                $.validator.addMethod("pwcheck", function(value) {
+                    return /^[A-Za-z0-9\d=!\-@._*]*$/.test(value) // consists of only these
+                        && /[a-z]/.test(value) // has a lowercase letter
+                        && /\d/.test(value) // has a digit
+                        && /[A-Z]/.test(value) // has an uppercase letter
+                        && /[\=!\-@._*]/.test(value); // has a special character
+                });
+            });
+        </script>
+        
+        
+        
+        <script type="text/javascript">
+            jQuery.validator.addMethod("cedula",function(value,element){
+            
+            
+              if(true){
+            
+                var cedula =value;
+                //alert(cedula);
+                array = cedula.split( "" );
+                num = array.length;
+                if ( num == 10 )
+                {
+                  if( cedula == "1111111111"||cedula == "2222222222" || cedula == "3333333333"  || cedula == "4444444444"  || cedula == "5555555555"  || cedula == "6666666666"  || cedula == "7777777777"  || cedula == "8888888888" ){
+            
+                    return false;
+                  }
+            
+                  total = 0;
+                  digito = (array[9]*1);
+                  for( i=0; i < (num-1); i++ )
+                  {
+                    mult = 0;
+                    if ( ( i%2 ) != 0 ) {
+                      total = total + ( array[i] * 1 );
+                    }
+                    else
+                    {
+                      mult = array[i] * 2;
+                      if ( mult > 9 )
+                        total = total + ( mult - 9 );
+                      else
+                        total = total + mult;
+                    }
+                  }
+                  decena = total / 10;
+                  decena = Math.floor( decena );
+                  decena = ( decena + 1 ) * 10;
+                  final = ( decena - total );
+                  if ( ( final == 10 && digito == 0 ) || ( final == digito ) ) {
+                   // alert( "La c\xe9dula ES v\xe1lida!!!" );
+                    return true;
+                  }
+                  else{
+                    return false;
+                  }
+                }
+                else
+                {
+                  //alert( "La c\xe9dula NO es v\xe1lida!!!" );
+                  return false;
+                }
+              }
+              else
+              {
+                //alert("La c\xe9dula no puede tener menos de 10 d\xedgitos");
+                return false;
+              }
+            
+            }, "Cédula incorrecta o no es Ecuatoriana");
+            </script>
+        
+        
+            
+            
+        <style>
+            .alert-error {
+                /* Estilos para mensajes de error */
+                color: #721c24;
+                background-color: #f8d7da;
+                border-color: #f5c6cb;
+            }
+            
+        </style>
+        <script>
+          $(document).ready(function() {
+              // Configuración del plugin File Input con tu propio tema
+              $('#foto_usu').fileinput({
+                  language: 'es', // Configuración para el idioma español
+                  allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif'], // Extensiones permitidas
+                  maxFileSize: 10048, // Tamaño máximo del archivo en KB
+                  maxFileCount: 1, // Cantidad máxima de archivos
+                  browseClass: 'btn btn-primary', // Clase del botón "Browse"
+                  removeClass: 'btn btn-danger', // Clase del botón "Browse"
+                  cancelClass: 'btn btn-danger', // Clase del botón "Browse"
+                  uploadClass: 'btn btn-secondary', // Clase del botón "Browse"
+                  theme: 'fas', // Utilizar el tema 'fas' (Font Awesome) por defecto
+                  browseIcon: '<i class="fas fa-image"></i>', // Icono para el botón de búsqueda
+                  removeIcon: '<i class="fas fa-trash"></i>', // Icono para el botón de remover
+                  uploadIcon: '<i class="fas fa-upload"></i>', // Icono para el botón de subir (aunque no se mostrará)
+                  CaptionIcon:'<i class="fas fa-search"></i>'
+              });
+          });
+          </script>
+{% include 'administracion/footer.html' %}
+
+

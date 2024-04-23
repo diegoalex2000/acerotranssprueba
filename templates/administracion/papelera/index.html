@@ -1,0 +1,104 @@
+{% include 'administracion/header.html' %} 
+{% load static %}
+<br>
+
+<div class="card mt-3">
+   <div class="alert  text-center">
+      <h1 style="color:purple"><i class="fas fa-trash"></i>  <strong>PAPELERA</strong></h1>
+   </div>
+</div>
+<br>
+
+    <div class="card-header alert alert-primary">
+       <h3>  <strong>SELECCIONE UNA OPCIÓN:</strong></h3>
+    </div>
+ 
+ <br>
+
+
+ <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-3 col-sm-6"> <!-- Aquí he cambiado col-md-3 a col-md-3 col-sm-6 -->
+            <a href="{% url 'usuarios_borrados' %}" class="card-link btn-block mb-3"> 
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <h5 class="card-title text-white"><i class="fa fa-users-cog"></i> USUARIOS</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3 col-sm-6"> <!-- Aquí he cambiado col-md-3 a col-md-3 col-sm-6 -->
+            <a href="{% url 'vehiculos_borrados' %}" class="card-link btn-block mb-3" style="height: 18rem;">
+                <div class="card bg-danger ">
+                    <div class="card-body">
+                        <h5 class="card-title text-white"><i class="fa fa-truck"></i> VEHÍCULOS</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3 col-sm-6"> <!-- Aquí he cambiado col-md-3 a col-md-3 col-sm-6 -->
+            <a href="{% url 'categorias_borrados' %}" class="card-link btn-block mb-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <h5 class="card-title text-white"><i class="fa fa-bars"></i> CATEGORIAS</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3 col-sm-6"> <!-- Aquí he cambiado col-md-3 a col-md-3 col-sm-6 -->
+            <a href="#" class="card-link btn-block mb-3" >
+                <div class="card bg-danger ">
+                    <div class="card-body">
+                        <h5 class="card-title text-white"><i class="fa fa-file-o"></i> FACTURAS</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+<style>
+    .bg-danger2 {
+        background-color: red !important; /* Importante para sobrescribir las clases de Bootstrap */
+    }
+</style>
+
+
+<style>
+    .alert-error {
+        /* Estilos para mensajes de error */
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    
+</style>
+
+   <!-- Agrega un script al final del cuerpo para mostrar los mensajes -->
+   <script>
+    // Verifica si hay un mensaje de éxito
+    {% if success_message %}
+        iziToast.success({
+            title: 'Éxito',
+            message: '{{ success_message }}',
+            position: 'topRight'
+        });
+    {% endif %}
+    
+    // Verifica si hay un mensaje de error
+    {% if error_message %}
+        iziToast.error({
+            title: 'Error',
+            message: '{{ error_message }}',
+            position: 'topRight'
+        });
+    {% endif %}
+
+{% include 'administracion/footer.html' %} 
+
+

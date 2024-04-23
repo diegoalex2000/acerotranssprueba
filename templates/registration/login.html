@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Basic -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Mobile Metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Site Metas -->
+    <title>ACEROTRANSS.S.A.</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Site Icons -->
+    <link rel="icon" href="{% static 'images/fevicon.png' %}" type="image/png"/>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <!-- Responsive CSS -->
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <!-- Color CSS -->
+    <link rel="stylesheet" href="{% static 'css/colors.css' %}">
+    <!-- Select Bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap-select.css' %}">
+    <!-- Scrollbar CSS -->
+    <link rel="stylesheet" href="{% static 'css/perfect-scrollbar.css' %}">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <!-- Calendar File CSS -->
+    <link rel="stylesheet" href="{% static 'js/semantic.min.css' %}">
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+{% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{% endfor %}
+<script>
+    {% for message in messages %}
+        iziToast.{{ message.tags }}({
+            title: '{{ message.tags|capfirst }}',
+            message: '{{ message }}',
+            position: 'topRight',
+            timeout: 5000, // Duración del mensaje (en milisegundos)
+            close: true, // Mostrar botón de cerrar
+        });
+    {% endfor %}
+</script>
+
+<body class="inner_page login">
+<div class="full_container">
+    <div class="container">
+        <div class="center verticle_center full_height">
+            <div class="login_section">
+                <div class="logo_login">
+                  <div class="center">
+                    <img width="210" style="display:block; opacity:0;" src="{% static 'images/logo/logo.png' %}" alt="#">
+                </div>
+                
+                </div>
+                <div class="login_form">
+                    
+                        <form id="loginForm" method="post" action={% url 'iniciar_sesion' %}  >
+                            {% csrf_token %}
+                            <div class="form-group text-center">
+                              <h4 for="email" class="negrita-centrado">Cédula:</h4>
+                              <input type="number" class="form-control redondo" placeholder="Ingrese su cédula" id="email" name="username" required>
+                            </div>
+                            <br>
+                            <div class="form-group text-center">
+                            <h4 for="password" class="negrita-centrado">Contraseña:</h4>
+                            <div class="input-with-icon">
+                                <input type="password" class="form-control redondo" id="password" placeholder="Ingrese su contraseña" name="password" required>
+                                <span class="toggle-password" onclick="togglePasswordVisibility()">
+                                <i class="fa fa-eye"></i>
+                                </span>
+                            </div>
+                            </div>  
+                            <br>
+                            <br>
+                            <hr>                        
+                            <div class="form-group text-center">
+                            <button type="submit" class="btn btn-danger redondo text-center negrita-centrado"> <i class="fa fa-sign-in"> </i> Iniciar Sesión</button>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .input-group {
+        display: flex;
+        align-items: stretch;
+    }
+    
+    .input-group .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: 0;
+    }
+    
+    .input-group .btn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    
+</style>
+<!-- jQuery -->
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<!-- Wow Animation -->
+<script src="{% static 'js/animate.js' %}"></script>
+<!-- Select Country -->
+<script src="{% static 'js/bootstrap-select.js' %}"></script>
+<!-- Nice Scrollbar -->
+<script src="{% static 'js/perfect-scrollbar.min.js' %}"></script>
+<script>
+    var ps = new PerfectScrollbar('#sidebar');
+</script>
+<!-- Custom JS -->
+<script src="{% static 'js/custom.js' %}"></script>
+</body>
+</html>
+<style>
+    .redondo{
+        border-radius: 100px;
+    }
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+      // Reglas de validación para el formulario
+      $("#loginForm").validate({
+        rules: {
+          email: {
+            required: true,
+            email: true
+          },
+          username:{
+            required: true,
+          },
+          password: {
+            required: true,
+            minlength: 6
+          }
+        },
+        messages: {
+          email: {
+            required: "Por favor, ingresa tu correo electrónico",
+            email: "Por favor, ingresa un correo electrónico válido"
+          },
+          username:{
+            required: "Ingrese su identificación",
+          },
+          password: {
+            required: "Por favor, ingresa tu contraseña",
+            minlength: "La contraseña debe tener al menos 6 caracteres"
+          }
+        },
+        errorElement: 'span',
+        errorPlacement: function(error, element) {
+          error.addClass('invalid-feedback');
+          element.closest('.form-group').append(error);
+        },
+        highlight: function(element, errorClass, validClass) {
+          $(element).addClass('is-invalid').removeClass('is-valid');
+        },
+        unhighlight: function(element, errorClass, validClass) {
+          $(element).addClass('is-valid').removeClass('is-invalid');
+        }
+      });
+    });
+  </script>
+
+  <script>
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('password');
+      const togglePassword = document.querySelector('.toggle-password i');
+    
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        togglePassword.classList.remove('fa-eye');
+        togglePassword.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        togglePassword.classList.remove('fa-eye-slash');
+        togglePassword.classList.add('fa-eye');
+      }
+    }
+    
+    </script>
+    <style media="screen">
+        .input-with-icon {
+        position: relative;
+        }
+        
+        .input-with-icon input[type="password"] {
+        padding-right: 30px; /* Ajusta el espacio a la derecha para el icono */
+        }
+        
+        .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        }
+        
+        </style>
+
+<!-- IziToast -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+
+<script>
+  // Función para mostrar mensajes de error con iziToast
+  function showErrorToast(message) {
+    iziToast.error({
+      title: 'Error',
+      message: message,
+      position: 'topRight'
+    });
+  }
+</script>
+
+<!-- Código JavaScript para mostrar los mensajes de error con iziToast -->
+{% if messages %}
+<script>
+    {% for message in messages %}
+        showErrorToast('{{ message }}');
+    {% endfor %}
+</script>
+{% endif %}

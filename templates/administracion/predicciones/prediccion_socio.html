@@ -1,0 +1,179 @@
+{% include 'administracion/header.html' %}
+{% load static %}
+
+<!-- Agregar la referencia al archivo JavaScript de jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Agregar la referencia a Matplotlib -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="card mt-3">
+    <div class="card-header alert  text-center">
+       <h1 style="color:purple"><i class="fas fa-chart-bar"></i>  <strong>PREDICCIÓN DE FACTURACIÓN POR SOCIO AL 2024</strong></h1>
+    </div>
+</div>
+
+<br>
+
+<select id="selectSocio" class="form-control">
+    <option value="">Selecciona un socio</option>
+    {% for socio in socios %}
+        <option value="{{ socio.id }}">{{ socio.nombre }} {{ socio.apellido }}</option>
+    {% endfor %}
+</select>
+
+<br>
+
+<div class="accordion" id="accordionExample" style="display:none;"> <!-- Ocultar el accordion al principio -->
+    <div class="card">
+        <div class="card-header alert alert-primary" id="headingOne">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left" style="color: purple; position: relative;" type="button" data-toggle="collapse" data-target="#collapseTable" aria-expanded="true" aria-controls="collapseTable">
+                    <h5 style="color: purple; display: inline-block; margin-right: 20px;">Ver Detalles</h5>
+                    <i class="fas fa-chevron-down purple-color" style="position: absolute; top: 50%; transform: translateY(-50%); right: 10px;color: purple; font-weight:bold;"></i>
+                </button>
+            </h2>
+        </div>
+
+        <div id="collapseTable" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="facturacionTable" class="table table-bordered table-striped horizontal">
+                        <thead class="alert-success">
+                            <tr>
+                                {% for prediccion in predicciones_por_mes %}
+                                    <th>{{ prediccion.fecha }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for prediccion in predicciones_por_mes %}
+                                    <td>{{ prediccion.prediccion }} </td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para dispositivos móviles */
+    @media (max-width: 767px) {
+        /* Establecer el ancho del contenedor del gráfico al 100% */
+        .graficador {
+            width: 100%;
+            max-width: none;
+        }
+    }
+</style>
+
+<!-- Div para mostrar el gráfico generado por Matplotlib -->
+<div class="container table-responsive">
+    <div id="grafico" class=" image-fluid graficador"></div>
+</div>
+
+<!-- Script para manejar la actualización de datos y gráficos -->
+<script>
+    // Función para actualizar el gráfico con Matplotlib
+    function actualizarGrafico(prediccionesPorMes, graficoCodificado) {
+        // Obtener el elemento div que contendrá el gráfico
+        var graficoDiv = $('#grafico');
+
+        // Eliminar cualquier gráfico anterior
+        graficoDiv.empty();
+
+        // Crear una nueva imagen con el gráfico codificado en base64
+        var img = $('<img>');
+        img.attr('src', 'data:image/png;base64,' + graficoCodificado);
+        img.attr('alt', 'Gráfico de barras');
+        img.css('width', '100%');
+        
+        // Agregar la imagen al div del gráfico
+        graficoDiv.append(img);
+    }
+
+    // Función para actualizar los datos del socio seleccionado y el gráfico
+function actualizarDatos(socioId) {
+    if (socioId) {
+        var url = '{% url "dashboard_socio_ajax" 999 %}'.replace('999', socioId);
+        $.ajax({
+            url: url,
+            type: 'GET',
+            data: {
+                socio_id: socioId
+            },
+            success: function(response) {
+                // Actualizar la tabla
+                $('#facturacionTable').html(response.tabla_html);
+                // Actualizar el gráfico solo si hay datos
+                if (response.predicciones_por_mes.length > 0 && response.grafico_codificado) {
+                    // Mostrar el accordion
+                    $('#accordionExample').show();
+                    // Actualizar el gráfico
+                    actualizarGrafico(response.predicciones_por_mes, response.grafico_codificado);
+                } else {
+                    // Ocultar el accordion si no hay datos
+                    $('#accordionExample').hide();
+                    // Borrar el gráfico
+                    $('#grafico').empty();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    } else {
+        // Ocultar el accordion si no se selecciona ningún socio
+        $('#accordionExample').hide();
+        // Borrar el gráfico y la tabla
+        $('#grafico').empty();
+        $('#facturacionTable').empty();
+    }
+}
+
+
+    // Vincular el evento change utilizando delegación de eventos
+    $(document).on('change', '#selectSocio', function() {
+        var socioId = $(this).val();
+       
+        console.log('Valor seleccionado:', socioId);
+        // Llamar a la función para actualizar los datos y el gráfico
+        actualizarDatos(socioId);
+    });
+</script>
+
+<script>
+    // Función para mostrar el spinner de carga con un mensaje opcional
+    function mostrarSpinner(message) {
+        // Muestra el overlay con el spinner
+        document.getElementById('loader').style.display = 'flex';
+        // Establece el mensaje
+        document.getElementById('message').innerText = message || '';
+    }
+
+    function ocultarSpinner() {
+        // Oculta el overlay con el spinner
+        document.getElementById('loader').style.display = 'none';
+        // Restaura el mensaje por defecto
+        document.getElementById('message').innerText = '';
+    }
+
+    // Manejar el cambio en el select
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('selectSocio').addEventListener('change', function(event) {
+            // Mostrar el spinner al cambiar la selección en el select
+            mostrarSpinner('Prediciendo');
+            // Ocultar el spinner después de 1 segundo
+            setTimeout(function() {
+                ocultarSpinner();
+            }, 1000);
+        });
+    });
+</script>
+
+
+{% include 'administracion/footer.html' %}
